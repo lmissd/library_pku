@@ -97,3 +97,10 @@ https://lmissd.github.io/library_pku/
 - 支持的手机浏览器可以直接点按钮说出想读的主题；不支持的浏览器会显示“暂不支持”，保留手动输入，不影响找书主流程。
 - 语音输入只是把孩子的话转成真实文本输入，后续推荐仍沿用现有 1000 本 `library.json` 与前端规则逻辑；尚未接入云端语音识别、大模型或 Coze。
 - 已做基础验证：`index.html` JS 语法检查通过，本地服务下 `index.html` 与 `library.json` 均返回 200，页面小朋友端可见语音按钮。
+
+## 2026-06-05 语音输入发布快照
+
+- 当前最新功能提交为 `4412c48 Add child voice input`。
+- GitHub 远端 `master` 已成功推送到 `https://github.com/lmissd/library_pku.git`。
+- CloudBase 上传包已重新生成：`D:\library_pku\cloudbase_upload.zip`，包含新版 `index.html` 与 1000 本书库 `library.json`。
+- 线上 CloudBase 更新方式仍是上传该 zip 并覆盖旧文件；更新后建议用 `?v=voice1` 打开，绕过手机缓存。
