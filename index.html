@@ -274,6 +274,112 @@
       margin-top: 16px;
     }
 
+    .role-grid {
+      display: grid;
+      gap: 12px;
+    }
+
+    .role-card {
+      min-height: 132px;
+      width: 100%;
+      border: 1px solid rgba(239, 220, 202, 0.95);
+      border-radius: var(--radius);
+      background: rgba(255, 255, 255, 0.96);
+      box-shadow: var(--shadow);
+      color: var(--ink);
+      padding: 18px;
+      text-align: left;
+      cursor: pointer;
+    }
+
+    .role-card strong {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 1.22rem;
+      line-height: 1.3;
+    }
+
+    .role-card span {
+      display: block;
+      color: var(--muted);
+      font-weight: 650;
+    }
+
+    .role-card.child {
+      border-color: rgba(255, 107, 53, 0.28);
+      background: linear-gradient(180deg, #fff, var(--soft-orange));
+    }
+
+    .role-card.parent {
+      border-color: rgba(78, 205, 196, 0.36);
+      background: linear-gradient(180deg, #fff, var(--soft-blue));
+    }
+
+    .role-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .role-pill {
+      display: inline-flex;
+      align-items: center;
+      min-height: 34px;
+      border-radius: 999px;
+      background: #fff;
+      border: 1px solid rgba(239, 220, 202, 0.95);
+      color: var(--muted);
+      padding: 5px 11px;
+      font-size: 0.9rem;
+      font-weight: 900;
+    }
+
+    .mini-btn {
+      min-height: 36px;
+      border: 1px solid rgba(239, 220, 202, 0.95);
+      border-radius: var(--radius);
+      background: #fff;
+      color: var(--primary-dark);
+      padding: 6px 10px;
+      font-size: 0.9rem;
+      font-weight: 900;
+      cursor: pointer;
+    }
+
+    .book-detail-grid,
+    .parent-grid,
+    .portrait-grid {
+      display: grid;
+      gap: 11px;
+    }
+
+    .detail-item,
+    .portrait-item {
+      border-radius: var(--radius);
+      border: 1px solid rgba(239, 220, 202, 0.9);
+      background: #FFFDFC;
+      padding: 12px;
+    }
+
+    .detail-item h3,
+    .portrait-item h3 {
+      margin-bottom: 5px;
+      font-size: 1rem;
+    }
+
+    .detail-item p,
+    .portrait-item p {
+      margin-bottom: 0;
+      color: #4B4038;
+    }
+
+    .empty-parent {
+      color: var(--muted);
+      font-weight: 700;
+    }
+
     .result-head {
       display: grid;
       gap: 11px;
@@ -627,124 +733,187 @@
       <div class="logo" aria-hidden="true">北</div>
       <div>
         <h1>北大附小智能阅读推荐</h1>
-        <p class="subtitle">输入兴趣，找到下一本想读的书 📚</p>
+        <p class="subtitle">小朋友找书，家长看反馈 📚</p>
       </div>
     </header>
 
-    <div class="stepper" aria-label="阅读流程">
-      <div id="stepOne" class="step active">1 找书</div>
-      <div id="stepTwo" class="step">2 小问答</div>
-      <div id="stepThree" class="step">3 反馈</div>
-    </div>
-
-    <section id="interestView" class="view panel" aria-labelledby="interestTitle">
-      <h2 id="interestTitle" class="greeting">今天想读什么书呢？✨</h2>
-      <p class="hello">可以写“我喜欢恐龙”“想看搞笑漫画”“不想看太厚的书”。</p>
-
-      <form id="interestForm" class="form-grid">
-        <label>
-          姓名
-          <input id="nameInput" type="text" autocomplete="name" placeholder="例如：小明" required>
-        </label>
-
-        <label>
-          年级
-          <select id="gradeInput" required>
-            <option value="">请选择年级</option>
-            <option value="一年级">一年级</option>
-            <option value="二年级">二年级</option>
-            <option value="三年级">三年级</option>
-            <option value="四年级">四年级</option>
-            <option value="五年级">五年级</option>
-            <option value="六年级">六年级</option>
-          </select>
-        </label>
-
-        <label>
-          我喜欢什么书 / 想读什么
-          <textarea id="queryInput" placeholder="例如：我喜欢恐龙，也想读有趣一点的书" required></textarea>
-        </label>
-
-        <label>
-          阅读历史
-          <textarea id="historyInput" placeholder="选填，例如：我读过《米小圈上学记》和《神奇校车》"></textarea>
-        </label>
-
-        <div class="quick-tags" aria-label="快速填写">
-          <button class="tag-btn" type="button" data-tag="我想看搞笑漫画">搞笑漫画</button>
-          <button class="tag-btn" type="button" data-tag="我喜欢恐龙和动物">恐龙动物</button>
-          <button class="tag-btn" type="button" data-tag="我想看侦探和冒险故事">侦探冒险</button>
-          <button class="tag-btn" type="button" data-tag="我不想看太厚的书">薄一点</button>
-        </div>
-
-        <button class="primary-btn" type="submit">帮我找书 ✨</button>
-      </form>
-    </section>
-
-    <section id="recommendView" class="view hidden" aria-live="polite">
-      <div class="result-head">
-        <p id="recommendGreeting" class="greeting"></p>
-        <p id="childResponse" class="child-response"></p>
-      </div>
-
-      <div id="noteGrid" class="note-grid"></div>
-
-      <div class="section">
-        <h2 class="section-title"><span class="dot"></span>兴趣入口书</h2>
-        <div id="interestBooks" class="book-list"></div>
-      </div>
-
-      <div class="section">
-        <h2 class="section-title"><span class="dot blue"></span>桥梁书</h2>
-        <div id="bridgeBooks" class="book-list"></div>
-      </div>
-
-      <div class="section">
-        <h2 class="section-title"><span class="dot pink"></span>经典 / 拓展书</h2>
-        <div id="classicBooks" class="book-list"></div>
-      </div>
-
-      <div class="button-row two">
-        <button id="backToInterestBtn" class="ghost-btn" type="button">返回修改兴趣</button>
-        <button id="freshStartBtn" class="secondary-btn" type="button">重新开始 🎉</button>
+    <section id="roleView" class="view panel" aria-labelledby="roleTitle">
+      <h2 id="roleTitle" class="greeting">请选择入口 ✨</h2>
+      <p class="hello">小朋友负责找书、选书和完成小问答；家长负责查看阅读路径、反馈和阅读画像。</p>
+      <div class="role-grid">
+        <button id="childEntryBtn" class="role-card child" type="button">
+          <strong>小朋友端 📚</strong>
+          <span>告诉我你想读什么，选一本书，读完后完成小问答。</span>
+        </button>
+        <button id="parentEntryBtn" class="role-card parent" type="button">
+          <strong>家长端 🌟</strong>
+          <span>查看孩子的阅读路径、阅读反馈、可沟通的话术和阅读画像。</span>
+        </button>
       </div>
     </section>
 
-    <section id="questionView" class="view hidden" aria-live="polite">
-      <div class="panel selected-book">
-        <p id="questionGreeting" class="greeting"></p>
-        <p id="questionBookInfo" class="hello"></p>
+    <section id="childAppView" class="view hidden" aria-live="polite">
+      <div class="role-toolbar">
+        <span class="role-pill">小朋友端</span>
+        <button class="mini-btn switchRoleBtn" type="button">换入口</button>
       </div>
 
-      <form id="answerForm" class="form-grid">
-        <div id="questionList" class="question-list"></div>
-        <button class="primary-btn" type="submit">我回答完了！🎯</button>
-      </form>
-
-      <div class="button-row">
-        <button id="backToRecommendBtn" class="ghost-btn" type="button">返回书单</button>
+      <div id="childStepper" class="stepper" aria-label="小朋友阅读流程">
+        <div id="stepOne" class="step active">1 找书</div>
+        <div id="stepTwo" class="step">2 选一本</div>
+        <div id="stepThree" class="step">3 小问答</div>
       </div>
+
+      <section id="interestView" class="view panel" aria-labelledby="interestTitle">
+        <h2 id="interestTitle" class="greeting">今天想读什么书呢？✨</h2>
+        <p class="hello">可以写“我喜欢恐龙”“想看搞笑漫画”“不想看太厚的书”。</p>
+
+        <form id="interestForm" class="form-grid">
+          <label>
+            姓名
+            <input id="nameInput" type="text" autocomplete="name" placeholder="例如：小明" required>
+          </label>
+
+          <label>
+            年级
+            <select id="gradeInput" required>
+              <option value="">请选择年级</option>
+              <option value="一年级">一年级</option>
+              <option value="二年级">二年级</option>
+              <option value="三年级">三年级</option>
+              <option value="四年级">四年级</option>
+              <option value="五年级">五年级</option>
+              <option value="六年级">六年级</option>
+            </select>
+          </label>
+
+          <label>
+            我喜欢什么书 / 想读什么
+            <textarea id="queryInput" placeholder="例如：我喜欢恐龙，也想读有趣一点的书" required></textarea>
+          </label>
+
+          <label>
+            阅读历史
+            <textarea id="historyInput" placeholder="选填，例如：我读过《米小圈上学记》和《神奇校车》"></textarea>
+          </label>
+
+          <div class="quick-tags" aria-label="快速填写">
+            <button class="tag-btn" type="button" data-tag="我想看搞笑漫画">搞笑漫画</button>
+            <button class="tag-btn" type="button" data-tag="我喜欢恐龙和动物">恐龙动物</button>
+            <button class="tag-btn" type="button" data-tag="我想看侦探和冒险故事">侦探冒险</button>
+            <button class="tag-btn" type="button" data-tag="我不想看太厚的书">薄一点</button>
+          </div>
+
+          <button class="primary-btn" type="submit">帮我找书 ✨</button>
+        </form>
+      </section>
+
+      <section id="recommendView" class="view hidden" aria-live="polite">
+        <div class="result-head">
+          <p id="recommendGreeting" class="greeting"></p>
+          <p id="childResponse" class="child-response"></p>
+        </div>
+
+        <div class="section">
+          <h2 class="section-title"><span class="dot"></span>兴趣入口书</h2>
+          <div id="interestBooks" class="book-list"></div>
+        </div>
+
+        <div class="section">
+          <h2 class="section-title"><span class="dot blue"></span>桥梁书</h2>
+          <div id="bridgeBooks" class="book-list"></div>
+        </div>
+
+        <div class="section">
+          <h2 class="section-title"><span class="dot pink"></span>经典 / 拓展书</h2>
+          <div id="classicBooks" class="book-list"></div>
+        </div>
+
+        <div class="button-row two">
+          <button id="backToInterestBtn" class="ghost-btn" type="button">返回修改兴趣</button>
+          <button id="freshStartBtn" class="secondary-btn" type="button">重新开始 🎉</button>
+        </div>
+      </section>
+
+      <section id="bookDetailView" class="view hidden" aria-live="polite">
+        <div class="panel selected-book">
+          <p id="bookDetailTitle" class="greeting"></p>
+          <p id="bookDetailInfo" class="hello"></p>
+          <div id="bookDetailGrid" class="book-detail-grid"></div>
+          <div class="button-row two">
+            <button id="backToRecommendBtn" class="ghost-btn" type="button">换一本书</button>
+            <button id="readFinishedBtn" class="primary-btn" type="button">我已读完📖</button>
+          </div>
+        </div>
+      </section>
+
+      <section id="questionView" class="view hidden" aria-live="polite">
+        <div class="panel selected-book">
+          <p id="questionGreeting" class="greeting"></p>
+          <p id="questionBookInfo" class="hello"></p>
+        </div>
+
+        <form id="answerForm" class="form-grid">
+          <div id="questionList" class="question-list"></div>
+          <button class="primary-btn" type="submit">我回答完了！🎯</button>
+        </form>
+
+        <div class="button-row">
+          <button id="backToBookBtn" class="ghost-btn" type="button">返回这本书</button>
+        </div>
+      </section>
+
+      <section id="childCompleteView" class="view panel hidden" aria-live="polite">
+        <h2 class="greeting">回答已保存 🎉</h2>
+        <p class="hello">你的阅读小问答已经完成啦。可以请家长打开“家长端”，一起看看阅读反馈和下一本书建议。</p>
+        <div class="button-row two">
+          <button id="childBackToBooksBtn" class="secondary-btn" type="button">回到书单 📚</button>
+          <button id="childToParentBtn" class="primary-btn" type="button">去家长端 🌟</button>
+        </div>
+      </section>
     </section>
 
-    <section id="feedbackView" class="view hidden" aria-live="polite">
-      <div class="feedback-card">
-        <div class="score-line">
-          <h2 id="feedbackLevel" class="level"></h2>
-          <div id="feedbackScore" class="score"></div>
-        </div>
-        <div id="feedbackStars" class="stars" aria-hidden="true"></div>
-        <div class="progress" aria-hidden="true">
-          <div id="scoreBar" class="progress-bar"></div>
-        </div>
-        <div id="feedbackGrid" class="feedback-grid"></div>
+    <section id="parentView" class="view hidden" aria-live="polite">
+      <div class="role-toolbar">
+        <span class="role-pill">家长端</span>
+        <button class="mini-btn switchRoleBtn" type="button">换入口</button>
       </div>
 
-      <div class="button-row two">
-        <button id="backToQuestionsBtn" class="ghost-btn" type="button">返回小问答</button>
-        <button id="chooseAnotherBtn" class="secondary-btn" type="button">回到书单 📚</button>
+      <div id="parentEmpty" class="panel hidden">
+        <h2 class="greeting">还没有阅读记录</h2>
+        <p class="empty-parent">请先让孩子进入“小朋友端”找书、选择一本并完成小问答。完成后，家长端会显示阅读路径、反馈和画像。</p>
+        <div class="button-row">
+          <button id="parentToChildBtn" class="primary-btn" type="button">去小朋友端 📚</button>
+        </div>
       </div>
-      <div class="button-row">
-        <button id="finishResetBtn" class="primary-btn" type="button">重新找一本 ✨</button>
+
+      <div id="parentDashboard" class="hidden">
+        <div class="feedback-card">
+          <div class="score-line">
+            <h2 id="feedbackLevel" class="level"></h2>
+            <div id="feedbackScore" class="score"></div>
+          </div>
+          <div id="feedbackStars" class="stars" aria-hidden="true"></div>
+          <div class="progress" aria-hidden="true">
+            <div id="scoreBar" class="progress-bar"></div>
+          </div>
+          <div id="feedbackGrid" class="feedback-grid"></div>
+        </div>
+
+        <div class="section">
+          <h2 class="section-title"><span class="dot blue"></span>阅读路径</h2>
+          <div id="parentPathGrid" class="parent-grid"></div>
+        </div>
+
+        <div class="section">
+          <h2 class="section-title"><span class="dot pink"></span>孩子阅读画像</h2>
+          <div id="portraitGrid" class="portrait-grid"></div>
+        </div>
+
+        <div class="button-row two">
+          <button id="parentBackToChildBtn" class="secondary-btn" type="button">回小朋友端</button>
+          <button id="parentResetBtn" class="ghost-btn" type="button">重新开始</button>
+        </div>
       </div>
     </section>
   </main>
@@ -758,7 +927,7 @@
   </div>
 
   <script>
-    const STATE_KEY = "pkuReadingH5StateV2";
+    const STATE_KEY = "pkuReadingH5StateV3";
     const REQUEST_TIMEOUT = 15000;
     const WORKFLOW_API_URL = "https://cqccmb7q97.coze.site/run";
     const USE_LOCAL_LIBRARY_FIRST = true;
@@ -1002,11 +1171,18 @@
       }
     ];
 
-    const views = {
+    const shellViews = {
+      role: document.querySelector("#roleView"),
+      child: document.querySelector("#childAppView"),
+      parent: document.querySelector("#parentView")
+    };
+
+    const childViews = {
       interest: document.querySelector("#interestView"),
       recommendations: document.querySelector("#recommendView"),
+      bookDetail: document.querySelector("#bookDetailView"),
       questions: document.querySelector("#questionView"),
-      evaluation: document.querySelector("#feedbackView")
+      complete: document.querySelector("#childCompleteView")
     };
 
     const fields = {
@@ -1028,14 +1204,23 @@
     }
 
     function bindEvents() {
+      document.querySelector("#childEntryBtn").addEventListener("click", enterChild);
+      document.querySelector("#parentEntryBtn").addEventListener("click", enterParent);
+      document.querySelectorAll(".switchRoleBtn").forEach((button) => {
+        button.addEventListener("click", () => goToStage("role"));
+      });
       document.querySelector("#interestForm").addEventListener("submit", handleInterestSubmit);
       document.querySelector("#answerForm").addEventListener("submit", handleAnswerSubmit);
       document.querySelector("#backToInterestBtn").addEventListener("click", () => goToStage("interest"));
       document.querySelector("#backToRecommendBtn").addEventListener("click", () => goToStage("recommendations"));
-      document.querySelector("#backToQuestionsBtn").addEventListener("click", () => goToStage("questions"));
-      document.querySelector("#chooseAnotherBtn").addEventListener("click", () => goToStage("recommendations"));
+      document.querySelector("#backToBookBtn").addEventListener("click", () => goToStage("bookDetail"));
+      document.querySelector("#readFinishedBtn").addEventListener("click", handleReadFinishedSelected);
+      document.querySelector("#childBackToBooksBtn").addEventListener("click", () => goToStage("recommendations"));
+      document.querySelector("#childToParentBtn").addEventListener("click", enterParent);
+      document.querySelector("#parentToChildBtn").addEventListener("click", enterChild);
+      document.querySelector("#parentBackToChildBtn").addEventListener("click", enterChild);
+      document.querySelector("#parentResetBtn").addEventListener("click", resetAll);
       document.querySelector("#freshStartBtn").addEventListener("click", resetAll);
-      document.querySelector("#finishResetBtn").addEventListener("click", resetAll);
 
       document.querySelectorAll(".tag-btn").forEach((button) => {
         button.addEventListener("click", () => {
@@ -1090,15 +1275,24 @@
       }
     }
 
-    async function handleReadFinished(book, group) {
+    function handleSelectBook(book, group) {
       hideToast();
       appState.selectedBook = normalizeSelectedBook(book, group);
-      appState.stage = "recommendations";
+      appState.stage = "bookDetail";
       appState.questions = [];
       appState.answers = [];
       appState.evaluation = null;
       persistState();
+      renderFromState();
+    }
 
+    async function handleReadFinishedSelected() {
+      hideToast();
+      if (!appState.selectedBook) {
+        showToast("请先从书单里选择一本书。");
+        goToStage(appState.recommendation ? "recommendations" : "interest");
+        return;
+      }
       try {
         const response = await postToApi({
           book_title: appState.selectedBook.title,
@@ -1146,7 +1340,7 @@
         }, "正在认真看看你的回答...");
         const evaluation = normalizeEvaluation(parseReadingCheckResponse(response));
 
-        appState.stage = "evaluation";
+        appState.stage = "complete";
         appState.evaluation = evaluation;
         persistState();
         renderFromState();
@@ -1166,15 +1360,16 @@
         ...overrides
       };
 
-      if (USE_LOCAL_LIBRARY_FIRST) {
-        return buildLocalWorkflowResponse(body);
-      }
-
       const controller = new AbortController();
       const timer = window.setTimeout(() => controller.abort(), REQUEST_TIMEOUT);
       showLoading(loadingText);
 
       try {
+        if (USE_LOCAL_LIBRARY_FIRST) {
+          await wait(260);
+          return buildLocalWorkflowResponse(body);
+        }
+
         const response = await fetch(WORKFLOW_API_URL, {
           method: "POST",
           headers,
@@ -1203,6 +1398,10 @@
         window.clearTimeout(timer);
         hideLoading();
       }
+    }
+
+    function wait(ms) {
+      return new Promise((resolve) => window.setTimeout(resolve, ms));
     }
 
     function buildLocalWorkflowResponse(body) {
@@ -1574,38 +1773,57 @@
     function renderFromState() {
       hydrateProfileForm();
       validateStage();
+      renderShell();
       renderProgress();
-      Object.keys(views).forEach((key) => {
-        views[key].classList.toggle("hidden", appState.stage !== key);
-      });
 
       if (appState.stage === "recommendations") {
         renderRecommendations();
       }
+      if (appState.stage === "bookDetail") {
+        renderBookDetail();
+      }
       if (appState.stage === "questions") {
         renderQuestions();
       }
-      if (appState.stage === "evaluation") {
-        renderFeedback();
+      if (appState.stage === "parent") {
+        renderParentDashboard();
       }
 
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
 
     function validateStage() {
+      const validStages = ["role", "interest", "recommendations", "bookDetail", "questions", "complete", "parent"];
+      if (!validStages.includes(appState.stage)) {
+        appState.stage = "role";
+      }
       if (appState.stage === "recommendations" && !appState.recommendation) {
         appState.stage = "interest";
       }
-      if (appState.stage === "questions" && (!appState.selectedBook || !appState.questions.length)) {
+      if (appState.stage === "bookDetail" && !appState.selectedBook) {
         appState.stage = appState.recommendation ? "recommendations" : "interest";
       }
-      if (appState.stage === "evaluation" && !appState.evaluation) {
-        appState.stage = appState.questions.length ? "questions" : "interest";
+      if (appState.stage === "questions" && (!appState.selectedBook || !appState.questions.length)) {
+        appState.stage = appState.selectedBook ? "bookDetail" : appState.recommendation ? "recommendations" : "interest";
+      }
+      if (appState.stage === "complete" && !appState.evaluation) {
+        appState.stage = appState.questions.length ? "questions" : appState.selectedBook ? "bookDetail" : "interest";
       }
     }
 
+    function renderShell() {
+      const inChild = ["interest", "recommendations", "bookDetail", "questions", "complete"].includes(appState.stage);
+      shellViews.role.classList.toggle("hidden", appState.stage !== "role");
+      shellViews.child.classList.toggle("hidden", !inChild);
+      shellViews.parent.classList.toggle("hidden", appState.stage !== "parent");
+
+      Object.entries(childViews).forEach(([key, view]) => {
+        view.classList.toggle("hidden", !inChild || appState.stage !== key);
+      });
+    }
+
     function renderProgress() {
-      const stepIndex = appState.stage === "questions" ? 2 : appState.stage === "evaluation" ? 3 : 1;
+      const stepIndex = appState.stage === "interest" ? 1 : appState.stage === "recommendations" || appState.stage === "bookDetail" ? 2 : 3;
       [
         document.querySelector("#stepOne"),
         document.querySelector("#stepTwo"),
@@ -1613,16 +1831,15 @@
       ].forEach((step, index) => {
         const current = index + 1;
         step.classList.toggle("active", current === stepIndex);
-        step.classList.toggle("done", current < stepIndex);
+        step.classList.toggle("done", current < stepIndex || appState.stage === "complete");
       });
     }
 
     function renderRecommendations() {
       const profile = appState.profile;
       const result = appState.recommendation;
-      document.querySelector("#recommendGreeting").textContent = `${profile.name || "小读者"}，这是给你的阅读路线 🌟`;
-      setOptionalText("#childResponse", result.child_response);
-      renderNotes(result);
+      document.querySelector("#recommendGreeting").textContent = `${profile.name || "小读者"}，请选择一本想读的书 🌟`;
+      setOptionalText("#childResponse", result.child_response || "先选一本最想读的，读完以后再来完成小问答。");
 
       GROUPS.forEach((group) => {
         const target = document.querySelector(`#${group.targetId}`);
@@ -1640,30 +1857,6 @@
         list.forEach((book) => {
           target.appendChild(createBookCard(book, group));
         });
-      });
-    }
-
-    function renderNotes(result) {
-      const noteGrid = document.querySelector("#noteGrid");
-      noteGrid.innerHTML = "";
-
-      [
-        ["阅读路径", result.reading_path],
-        ["给家长的建议", result.parent_message],
-        ["可以继续聊", result.follow_up_question]
-      ].forEach(([title, value]) => {
-        if (!value) {
-          return;
-        }
-
-        const block = document.createElement("article");
-        block.className = "note-block";
-        const heading = document.createElement("h3");
-        heading.textContent = title;
-        const paragraph = document.createElement("p");
-        paragraph.textContent = value;
-        block.append(heading, paragraph);
-        noteGrid.appendChild(block);
       });
     }
 
@@ -1691,14 +1884,29 @@
       location.className = "location";
       location.textContent = book.location ? `📍 馆藏位置：${book.location}` : "📍 馆藏位置：请到图书馆服务台咨询";
 
-      const readButton = document.createElement("button");
-      readButton.className = "primary-btn";
-      readButton.type = "button";
-      readButton.textContent = "我已读完📖";
-      readButton.addEventListener("click", () => handleReadFinished(book, group));
+      const chooseButton = document.createElement("button");
+      chooseButton.className = "primary-btn";
+      chooseButton.type = "button";
+      chooseButton.textContent = "选择这本书 📖";
+      chooseButton.addEventListener("click", () => handleSelectBook(book, group));
 
-      card.append(type, title, author, reason, location, readButton);
+      card.append(type, title, author, reason, location, chooseButton);
       return card;
+    }
+
+    function renderBookDetail() {
+      const book = appState.selectedBook;
+      if (!book) {
+        return;
+      }
+
+      document.querySelector("#bookDetailTitle").textContent = `《${book.title}》`;
+      document.querySelector("#bookDetailInfo").textContent = `${book.groupLabel} · ${book.author || "作者暂未提供"} · ${appState.profile.grade || "年级未填写"}`;
+      renderInfoGrid("#bookDetailGrid", [
+        ["为什么推荐", book.reason || "这本书适合从兴趣出发慢慢读。"],
+        ["馆藏位置", book.location || "请到图书馆服务台咨询"],
+        ["读前小目标", book.summary || "读的时候记住一个人物、一件事情和一个自己的想法。"]
+      ], "detail-item");
     }
 
     function renderQuestions() {
@@ -1741,6 +1949,19 @@
       });
     }
 
+    function renderParentDashboard() {
+      const hasResult = Boolean(appState.evaluation && appState.selectedBook);
+      document.querySelector("#parentEmpty").classList.toggle("hidden", hasResult);
+      document.querySelector("#parentDashboard").classList.toggle("hidden", !hasResult);
+      if (!hasResult) {
+        return;
+      }
+
+      renderFeedback();
+      renderParentPath();
+      renderReadingPortrait();
+    }
+
     function renderFeedback() {
       const evaluation = appState.evaluation;
       const score = evaluation.score === null ? null : clamp(evaluation.score, 0, 100);
@@ -1751,20 +1972,49 @@
       document.querySelector("#feedbackStars").textContent = renderStars(score);
       document.querySelector("#scoreBar").style.width = score === null ? "0%" : `${score}%`;
 
-      const grid = document.querySelector("#feedbackGrid");
-      grid.innerHTML = "";
-
-      [
+      renderInfoGrid("#feedbackGrid", [
         ["整体评价", evaluation.summary],
         ["详细反馈", evaluation.detail_feedback],
         ["鼓励语", evaluation.encouragement],
         ["下一本推荐", evaluation.next_book_suggestion]
-      ].forEach(([title, value]) => {
+      ], "feedback-item");
+    }
+
+    function renderParentPath() {
+      const result = appState.recommendation || {};
+      const book = appState.selectedBook || {};
+      renderInfoGrid("#parentPathGrid", [
+        ["孩子选择的书", book.title ? `《${book.title}》 · ${book.author || "作者暂未提供"} · ${book.location || "馆藏位置暂未提供"}` : ""],
+        ["阅读路径", result.reading_path],
+        ["家长可以这样说", result.parent_message],
+        ["继续聊天的问题", result.follow_up_question]
+      ], "detail-item");
+    }
+
+    function renderReadingPortrait() {
+      const answers = appState.answers || [];
+      const answered = answers.filter((answer) => textOf(answer)).length;
+      const avgLength = answered ? Math.round(answers.reduce((sum, answer) => sum + textOf(answer).length, 0) / answered) : 0;
+      const book = appState.selectedBook || {};
+      const score = appState.evaluation && appState.evaluation.score !== null ? clamp(appState.evaluation.score, 0, 100) : null;
+      const engagement = score === null ? "暂未评估" : score >= 88 ? "投入度高，能比较主动地回忆细节。" : score >= 75 ? "能读到主要内容，适合继续鼓励表达细节。" : "需要陪伴复读重点片段，再用口头方式复述。";
+
+      renderInfoGrid("#portraitGrid", [
+        ["兴趣线索", `${appState.profile.user_query || "未填写"}${book.category ? `；当前选择偏向：${book.category}` : ""}`],
+        ["回答表现", `完成 ${answered}/${appState.questions.length || 0} 个问题，平均每题约 ${avgLength} 个字。${engagement}`],
+        ["适合的陪伴方式", score !== null && score >= 85 ? "可以让孩子讲给家长听，再请孩子挑下一本稍微更有挑战的书。" : "建议家长先问“你最记得哪一段”，再一起回到书里找证据。"]
+      ], "portrait-item");
+    }
+
+    function renderInfoGrid(selector, items, className) {
+      const grid = document.querySelector(selector);
+      grid.innerHTML = "";
+      items.forEach(([title, value]) => {
         if (!value) {
           return;
         }
         const item = document.createElement("article");
-        item.className = "feedback-item";
+        item.className = className;
         const heading = document.createElement("h3");
         heading.textContent = title;
         const paragraph = document.createElement("p");
@@ -1782,14 +2032,56 @@
       return "★".repeat(filled) + "☆".repeat(5 - filled);
     }
 
-    function goToStage(stage) {
-      if (stage === "interest") {
-        appState.stage = "interest";
-      } else if (stage === "recommendations" && appState.recommendation) {
-        appState.stage = "recommendations";
-      } else if (stage === "questions" && appState.questions.length) {
-        appState.stage = "questions";
+    function enterChild() {
+      if (appState.stage === "role" || appState.stage === "parent") {
+        appState.stage = getBestChildStage();
       }
+      persistState();
+      renderFromState();
+    }
+
+    function enterParent() {
+      appState.stage = "parent";
+      persistState();
+      renderFromState();
+    }
+
+    function getBestChildStage() {
+      if (appState.evaluation && appState.selectedBook) {
+        return "complete";
+      }
+      if (appState.questions.length && appState.selectedBook) {
+        return "questions";
+      }
+      if (appState.selectedBook) {
+        return "bookDetail";
+      }
+      if (appState.recommendation) {
+        return "recommendations";
+      }
+      return "interest";
+    }
+
+    function goToStage(stage) {
+      const validStages = ["role", "interest", "recommendations", "bookDetail", "questions", "complete", "parent"];
+      if (!validStages.includes(stage)) {
+        return;
+      }
+
+      if (stage === "recommendations" && !appState.recommendation) {
+        stage = "interest";
+      }
+      if (stage === "bookDetail" && !appState.selectedBook) {
+        stage = appState.recommendation ? "recommendations" : "interest";
+      }
+      if (stage === "questions" && (!appState.selectedBook || !appState.questions.length)) {
+        stage = appState.selectedBook ? "bookDetail" : appState.recommendation ? "recommendations" : "interest";
+      }
+      if (stage === "complete" && !appState.evaluation) {
+        stage = appState.questions.length ? "questions" : getBestChildStage();
+      }
+
+      appState.stage = stage;
       persistState();
       renderFromState();
     }
@@ -1872,7 +2164,7 @@
 
     function createEmptyState() {
       return {
-        stage: "interest",
+        stage: "role",
         profile: {
           name: "",
           grade: "",
