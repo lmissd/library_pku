@@ -1,0 +1,901 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>北大附小图书馆・智能阅读伙伴</title>
+  <style>
+    :root {
+      --bg: #fff8f0;
+      --paper: #ffffff;
+      --ink: #2d2520;
+      --muted: #796d64;
+      --primary: #ff6b35;
+      --primary-dark: #e75522;
+      --blue: #4a90d9;
+      --green: #58a96b;
+      --soft-orange: #fff0e7;
+      --soft-blue: #eef7ff;
+      --soft-green: #effaf1;
+      --line: #f0dfcf;
+      --shadow: 0 10px 28px rgba(117, 76, 43, 0.11);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      font-size: 16px;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 20% 8%, rgba(255, 205, 133, 0.38), transparent 28%),
+        radial-gradient(circle at 86% 18%, rgba(119, 187, 237, 0.25), transparent 24%),
+        var(--bg);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      line-height: 1.55;
+    }
+
+    button,
+    input,
+    select,
+    textarea {
+      font: inherit;
+    }
+
+    .app {
+      width: min(100%, 520px);
+      margin: 0 auto;
+      min-height: 100vh;
+      padding: 18px 16px 28px;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 18px;
+      padding-top: env(safe-area-inset-top);
+    }
+
+    .logo {
+      display: grid;
+      flex: 0 0 42px;
+      width: 42px;
+      height: 42px;
+      place-items: center;
+      border-radius: 12px;
+      color: #fff;
+      background: linear-gradient(135deg, var(--primary), #ff9e56);
+      box-shadow: 0 8px 18px rgba(255, 107, 53, 0.24);
+      font-size: 1.3rem;
+      font-weight: 800;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 1.22rem;
+      line-height: 1.25;
+      letter-spacing: 0;
+    }
+
+    .subtitle {
+      margin: 3px 0 0;
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+
+    .panel,
+    .result-block,
+    .book-card {
+      border: 1px solid rgba(240, 223, 207, 0.85);
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.93);
+      box-shadow: var(--shadow);
+    }
+
+    .panel {
+      padding: 18px;
+    }
+
+    .hello {
+      margin: 0 0 16px;
+      color: var(--muted);
+      font-size: 1rem;
+    }
+
+    .form-grid {
+      display: grid;
+      gap: 14px;
+    }
+
+    label {
+      display: grid;
+      gap: 7px;
+      color: #483c34;
+      font-weight: 700;
+    }
+
+    .hint {
+      color: var(--muted);
+      font-size: 0.86rem;
+      font-weight: 500;
+    }
+
+    input,
+    select,
+    textarea {
+      width: 100%;
+      min-height: 48px;
+      border: 1.5px solid #ead9c8;
+      border-radius: 12px;
+      outline: none;
+      background: #fffdfb;
+      color: var(--ink);
+      padding: 12px 13px;
+      transition: border-color 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+    }
+
+    textarea {
+      min-height: 86px;
+      resize: vertical;
+    }
+
+    input:focus,
+    select:focus,
+    textarea:focus {
+      border-color: var(--primary);
+      background: #fff;
+      box-shadow: 0 0 0 4px rgba(255, 107, 53, 0.12);
+    }
+
+    .primary-btn,
+    .secondary-btn {
+      width: 100%;
+      min-height: 50px;
+      border: 0;
+      border-radius: 12px;
+      cursor: pointer;
+      font-weight: 800;
+      transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .primary-btn {
+      margin-top: 4px;
+      color: #fff;
+      background: linear-gradient(135deg, var(--primary), #ff8a4b);
+      box-shadow: 0 12px 24px rgba(255, 107, 53, 0.24);
+    }
+
+    .secondary-btn {
+      margin-top: 16px;
+      color: var(--primary-dark);
+      background: #fff0e7;
+      border: 1px solid rgba(255, 107, 53, 0.22);
+    }
+
+    .primary-btn:active,
+    .secondary-btn:active {
+      transform: translateY(1px) scale(0.99);
+    }
+
+    .quick-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .tag-btn {
+      border: 1px solid #f1d5bf;
+      border-radius: 999px;
+      color: #9a4b22;
+      background: #fff6ee;
+      padding: 7px 10px;
+      font-size: 0.9rem;
+    }
+
+    .error {
+      display: none;
+      margin-top: 12px;
+      border-radius: 12px;
+      color: #8d341d;
+      background: #fff0e7;
+      padding: 11px 12px;
+      font-weight: 700;
+    }
+
+    .error.show {
+      display: block;
+    }
+
+    .loading {
+      display: none;
+      margin-top: 14px;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      color: var(--muted);
+      font-weight: 700;
+    }
+
+    .loading.show {
+      display: flex;
+    }
+
+    .spinner {
+      width: 22px;
+      height: 22px;
+      border: 3px solid #ffe1cd;
+      border-top-color: var(--primary);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .result-head {
+      display: grid;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .greeting {
+      margin: 0;
+      font-size: 1.2rem;
+      font-weight: 850;
+    }
+
+    .child-response {
+      margin: 0;
+      color: #4b4038;
+      background: #fff;
+      border-left: 5px solid var(--primary);
+      border-radius: 12px;
+      padding: 13px 14px;
+      box-shadow: var(--shadow);
+    }
+
+    .encouragement {
+      color: #774115;
+      background: #fff0dc;
+      border: 1px dashed rgba(255, 139, 66, 0.52);
+      border-radius: 12px;
+      padding: 12px 13px;
+      font-weight: 800;
+    }
+
+    .section {
+      margin-top: 18px;
+    }
+
+    .section-title {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      margin: 0 0 10px;
+      font-size: 1.05rem;
+    }
+
+    .dot {
+      width: 11px;
+      height: 11px;
+      border-radius: 999px;
+      background: var(--primary);
+    }
+
+    .dot.blue {
+      background: var(--blue);
+    }
+
+    .dot.green {
+      background: var(--green);
+    }
+
+    .book-list {
+      display: grid;
+      gap: 11px;
+    }
+
+    .book-card {
+      padding: 13px;
+      box-shadow: 0 8px 20px rgba(117, 76, 43, 0.08);
+    }
+
+    .book-card.interest {
+      border-left: 6px solid var(--primary);
+      background: linear-gradient(90deg, var(--soft-orange), #fff 42%);
+    }
+
+    .book-card.bridge {
+      border-left: 6px solid var(--blue);
+      background: linear-gradient(90deg, var(--soft-blue), #fff 42%);
+    }
+
+    .book-card.classic {
+      border-left: 6px solid var(--green);
+      background: linear-gradient(90deg, var(--soft-green), #fff 42%);
+    }
+
+    .book-title {
+      margin: 0;
+      font-size: 1.02rem;
+      font-weight: 850;
+    }
+
+    .book-author {
+      margin: 4px 0 8px;
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+
+    .reason {
+      margin: 0;
+      color: #4d423b;
+    }
+
+    .result-block {
+      margin-top: 16px;
+      padding: 14px;
+      box-shadow: 0 8px 20px rgba(117, 76, 43, 0.08);
+    }
+
+    .result-block h3 {
+      margin: 0 0 7px;
+      font-size: 1rem;
+    }
+
+    .result-block p {
+      margin: 0;
+      color: #51463f;
+    }
+
+    .parent {
+      background: #f5fbff;
+      border-color: rgba(74, 144, 217, 0.2);
+    }
+
+    .follow {
+      background: #fff9e8;
+      border-color: rgba(255, 184, 77, 0.28);
+    }
+
+    .empty-note {
+      margin: 0;
+      color: var(--muted);
+      background: rgba(255, 255, 255, 0.78);
+      border-radius: 12px;
+      padding: 12px;
+    }
+
+    @media (min-width: 560px) {
+      .app {
+        padding-top: 24px;
+      }
+
+      .panel {
+        padding: 22px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header class="topbar">
+      <div class="logo" aria-hidden="true">书</div>
+      <div>
+        <h1>北大附小图书馆・智能阅读伙伴</h1>
+        <p class="subtitle">说一句想看的书，我来帮你找</p>
+      </div>
+    </header>
+
+    <section id="inputView" class="panel" aria-labelledby="formTitle">
+      <h2 id="formTitle" class="greeting">今天想读什么呀？</h2>
+      <p class="hello">可以写“我喜欢恐龙”“想看搞笑漫画”“不想看太厚的书”。</p>
+
+      <form id="bookForm" class="form-grid">
+        <label>
+          姓名
+          <input id="nameInput" type="text" autocomplete="name" placeholder="例如：小明" required>
+        </label>
+
+        <label>
+          年级
+          <select id="gradeInput" required>
+            <option value="">请选择年级</option>
+            <option value="一年级">一年级</option>
+            <option value="二年级">二年级</option>
+            <option value="三年级">三年级</option>
+            <option value="四年级">四年级</option>
+            <option value="五年级">五年级</option>
+            <option value="六年级">六年级</option>
+          </select>
+        </label>
+
+        <label>
+          你想看什么书
+          <textarea id="queryInput" placeholder="例如：我喜欢恐龙，想看有趣一点的书" required></textarea>
+          <span class="hint">也可以说不想看什么，比如“不想看太厚的书”。</span>
+        </label>
+
+        <label>
+          借阅记录
+          <textarea id="historyInput" placeholder="可以不填写。例如：我看过阿衰 online 和米小圈上学记"></textarea>
+        </label>
+
+        <div class="quick-tags" aria-label="快速填写">
+          <button class="tag-btn" type="button" data-tag="我想看搞笑漫画">搞笑漫画</button>
+          <button class="tag-btn" type="button" data-tag="我喜欢恐龙和动物">恐龙动物</button>
+          <button class="tag-btn" type="button" data-tag="我想看侦探和冒险故事">侦探冒险</button>
+          <button class="tag-btn" type="button" data-tag="我不想看太厚的书">薄一点</button>
+        </div>
+
+        <button class="primary-btn" type="submit">帮我找书</button>
+      </form>
+
+      <div id="loading" class="loading" role="status" aria-live="polite">
+        <span class="spinner" aria-hidden="true"></span>
+        <span>正在翻书架，马上回来...</span>
+      </div>
+      <div id="errorBox" class="error" role="alert"></div>
+    </section>
+
+    <section id="resultView" class="hidden" aria-live="polite">
+      <div class="result-head">
+        <p id="greetingText" class="greeting"></p>
+        <p id="childResponse" class="child-response"></p>
+        <div id="encouragementText" class="encouragement"></div>
+      </div>
+
+      <div class="section">
+        <h2 class="section-title"><span class="dot"></span>兴趣入口书</h2>
+        <div id="interestList" class="book-list"></div>
+      </div>
+
+      <div class="section">
+        <h2 class="section-title"><span class="dot blue"></span>桥梁书</h2>
+        <div id="bridgeList" class="book-list"></div>
+      </div>
+
+      <div class="section">
+        <h2 class="section-title"><span class="dot green"></span>经典 / 拓展书</h2>
+        <div id="classicList" class="book-list"></div>
+      </div>
+
+      <div class="result-block">
+        <h3>阅读路径</h3>
+        <p id="readingPath"></p>
+      </div>
+
+      <div class="result-block parent">
+        <h3>给家长的建议</h3>
+        <p id="parentMessage"></p>
+      </div>
+
+      <div class="result-block follow">
+        <h3>可以继续问问孩子</h3>
+        <p id="followQuestion"></p>
+      </div>
+
+      <button id="resetBtn" class="secondary-btn" type="button">再找一次</button>
+    </section>
+  </main>
+
+  <script>
+    const books = [
+      {
+        title: "米小圈上学记",
+        author: "北猫",
+        grades: ["一年级", "二年级", "三年级"],
+        tags: ["搞笑", "校园", "朋友", "轻松", "漫画", "故事"],
+        value_type: "兴趣入口书",
+        reason: "校园故事很亲切，笑点多，适合从轻松阅读开始。"
+      },
+      {
+        title: "阿衰 online",
+        author: "猫小乐",
+        grades: ["一年级", "二年级", "三年级", "四年级"],
+        tags: ["漫画", "搞笑", "轻松", "校园"],
+        value_type: "兴趣入口书",
+        reason: "漫画节奏快，容易读进去，可以帮助孩子先建立翻书的快乐。"
+      },
+      {
+        title: "父与子全集",
+        author: "埃·奥·卜劳恩",
+        grades: ["一年级", "二年级", "三年级", "四年级"],
+        tags: ["漫画", "幽默", "亲情", "图画", "轻松"],
+        value_type: "兴趣入口书",
+        reason: "几乎不用很多文字也能读懂，幽默里有温暖的亲情。"
+      },
+      {
+        title: "恐龙大陆",
+        author: "黑川光广",
+        grades: ["一年级", "二年级", "三年级"],
+        tags: ["恐龙", "动物", "冒险", "图画", "故事"],
+        value_type: "兴趣入口书",
+        reason: "恐龙主题很抓人，故事短而有画面感，适合兴趣驱动阅读。"
+      },
+      {
+        title: "神奇校车",
+        author: "乔安娜·柯尔",
+        grades: ["二年级", "三年级", "四年级", "五年级"],
+        tags: ["科学", "科普", "冒险", "身体", "自然", "恐龙", "宇宙"],
+        value_type: "桥梁书",
+        reason: "把科学知识放进冒险故事里，读起来像一起坐上会变形的校车。"
+      },
+      {
+        title: "不一样的卡梅拉",
+        author: "克利斯提昂·约里波瓦",
+        grades: ["一年级", "二年级", "三年级"],
+        tags: ["冒险", "成长", "幽默", "动物", "图画"],
+        value_type: "桥梁书",
+        reason: "故事活泼，文字量适中，能从图画书自然过渡到章节阅读。"
+      },
+      {
+        title: "晴天有时下猪",
+        author: "矢玉四郎",
+        grades: ["二年级", "三年级", "四年级"],
+        tags: ["搞笑", "想象", "日记", "校园", "轻松"],
+        value_type: "桥梁书",
+        reason: "想象力很跳跃，适合喜欢搞笑又愿意挑战多一点文字的孩子。"
+      },
+      {
+        title: "查理九世",
+        author: "雷欧幻像",
+        grades: ["三年级", "四年级", "五年级", "六年级"],
+        tags: ["侦探", "冒险", "推理", "悬疑", "朋友"],
+        value_type: "桥梁书",
+        reason: "情节推进快，有谜题和伙伴合作，适合喜欢探索秘密的孩子。"
+      },
+      {
+        title: "我的野生动物朋友",
+        author: "蒂皮·德格雷",
+        grades: ["三年级", "四年级", "五年级", "六年级"],
+        tags: ["动物", "自然", "摄影", "真实", "科普"],
+        value_type: "桥梁书",
+        reason: "真实照片和自然故事很有吸引力，能把动物兴趣延伸到观察世界。"
+      },
+      {
+        title: "窗边的小豆豆",
+        author: "黑柳彻子",
+        grades: ["三年级", "四年级", "五年级", "六年级"],
+        tags: ["校园", "成长", "温暖", "经典", "老师"],
+        value_type: "经典 / 拓展书",
+        reason: "故事温柔又有力量，能让孩子感受到被理解和被鼓励。"
+      },
+      {
+        title: "夏洛的网",
+        author: "E·B·怀特",
+        grades: ["三年级", "四年级", "五年级", "六年级"],
+        tags: ["经典", "动物", "友情", "成长", "温暖"],
+        value_type: "经典 / 拓展书",
+        reason: "关于友情、承诺和生命的经典故事，适合慢慢读、慢慢想。"
+      },
+      {
+        title: "小王子",
+        author: "安托万·德·圣-埃克苏佩里",
+        grades: ["四年级", "五年级", "六年级"],
+        tags: ["经典", "想象", "哲理", "星球", "成长"],
+        value_type: "经典 / 拓展书",
+        reason: "文字不长，但很有回味，适合开始接触更深一点的文学作品。"
+      },
+      {
+        title: "森林报",
+        author: "维·比安基",
+        grades: ["三年级", "四年级", "五年级", "六年级"],
+        tags: ["自然", "科普", "动物", "植物", "经典"],
+        value_type: "经典 / 拓展书",
+        reason: "像读自然界的新闻一样了解四季，适合喜欢动植物和观察的孩子。"
+      },
+      {
+        title: "中国神话故事",
+        author: "袁珂 编著",
+        grades: ["三年级", "四年级", "五年级", "六年级"],
+        tags: ["神话", "传统", "经典", "想象", "中国"],
+        value_type: "经典 / 拓展书",
+        reason: "能认识很多中国传统故事，也能打开更大的想象世界。"
+      },
+      {
+        title: "西游记 少儿版",
+        author: "吴承恩 原著",
+        grades: ["三年级", "四年级", "五年级", "六年级"],
+        tags: ["经典", "冒险", "神话", "孙悟空", "中国"],
+        value_type: "经典 / 拓展书",
+        reason: "人物鲜明、故事热闹，是进入中国古典名著的好入口。"
+      }
+    ];
+
+    const interestEncouragements = [
+      "漫画也很好呀，很多小朋友都是从漫画开始爱上阅读的！",
+      "能拿起书就是最棒的第一步！",
+      "先读自己喜欢的书，阅读会变得越来越轻松。",
+      "搞笑和轻松的书也有大本领，它们会把你带进阅读世界。",
+      "从喜欢开始读，慢慢就会发现更多好书。",
+      "会说出自己喜欢什么书，已经很会选书啦！",
+      "轻阅读也很珍贵，它能让阅读变成每天的小快乐。"
+    ];
+
+    const classicEncouragements = [
+      "你选的书真棒，都是经典好书！",
+      "阅读品味越来越好啦！",
+      "愿意挑战经典故事，说明你已经准备好读更有回味的书了。",
+      "这些书很适合慢慢读，你会在故事里发现很多小秘密。",
+      "你已经很会给自己挑有营养的书了！",
+      "读经典就像和很多有趣的人聊天，太棒啦！"
+    ];
+
+    const keywordMap = [
+      ["恐龙", ["恐龙"]],
+      ["漫画", ["漫画"]],
+      ["搞笑", ["搞笑", "幽默", "轻松"]],
+      ["好笑", ["搞笑", "幽默", "轻松"]],
+      ["校园", ["校园", "朋友"]],
+      ["动物", ["动物", "自然"]],
+      ["侦探", ["侦探", "推理", "悬疑"]],
+      ["推理", ["侦探", "推理", "悬疑"]],
+      ["冒险", ["冒险"]],
+      ["科学", ["科学", "科普"]],
+      ["科普", ["科学", "科普", "自然"]],
+      ["自然", ["自然", "动物", "植物"]],
+      ["神话", ["神话", "传统", "中国"]],
+      ["经典", ["经典"]],
+      ["薄", ["轻松", "图画", "漫画"]],
+      ["太厚", ["轻松", "图画", "漫画"]],
+      ["短", ["轻松", "图画", "漫画"]]
+    ];
+
+    const typeConfig = {
+      "兴趣入口书": {
+        id: "interestList",
+        className: "interest",
+        fallbackTags: ["漫画", "搞笑", "轻松", "图画"]
+      },
+      "桥梁书": {
+        id: "bridgeList",
+        className: "bridge",
+        fallbackTags: ["冒险", "校园", "科学", "动物"]
+      },
+      "经典 / 拓展书": {
+        id: "classicList",
+        className: "classic",
+        fallbackTags: ["经典", "成长", "自然", "中国"]
+      }
+    };
+
+    const form = document.querySelector("#bookForm");
+    const inputView = document.querySelector("#inputView");
+    const resultView = document.querySelector("#resultView");
+    const loading = document.querySelector("#loading");
+    const errorBox = document.querySelector("#errorBox");
+    const queryInput = document.querySelector("#queryInput");
+    const resetBtn = document.querySelector("#resetBtn");
+
+    document.querySelectorAll(".tag-btn").forEach((button) => {
+      button.addEventListener("click", () => {
+        queryInput.value = button.dataset.tag;
+        queryInput.focus();
+      });
+    });
+
+    form.addEventListener("submit", (event) => {
+      event.preventDefault();
+      hideError();
+
+      const name = document.querySelector("#nameInput").value.trim();
+      const grade = document.querySelector("#gradeInput").value;
+      const query = queryInput.value.trim();
+      const history = document.querySelector("#historyInput").value.trim();
+
+      if (!name || !grade || !query) {
+        showError("请先写好姓名、年级和想看的书，我才能帮你找哦。");
+        return;
+      }
+
+      loading.classList.add("show");
+
+      window.setTimeout(() => {
+        const result = buildRecommendation({ name, grade, query, history });
+        renderResult(result);
+        loading.classList.remove("show");
+        inputView.classList.add("hidden");
+        resultView.classList.remove("hidden");
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }, 520);
+    });
+
+    resetBtn.addEventListener("click", () => {
+      resultView.classList.add("hidden");
+      inputView.classList.remove("hidden");
+      loading.classList.remove("show");
+      hideError();
+      form.reset();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    });
+
+    function buildRecommendation(profile) {
+      const matchedTags = getMatchedTags(profile.query + " " + profile.history);
+      const selected = {
+        "兴趣入口书": selectBooks("兴趣入口书", profile.grade, matchedTags, profile.history),
+        "桥梁书": selectBooks("桥梁书", profile.grade, matchedTags, profile.history),
+        "经典 / 拓展书": selectBooks("经典 / 拓展书", profile.grade, matchedTags, profile.history)
+      };
+
+      const hasInterest = selected["兴趣入口书"].length > 0;
+      const topic = getTopic(profile.query, matchedTags);
+
+      return {
+        name: profile.name,
+        grade: profile.grade,
+        child_response: `我听出来啦，你想找${topic}。我给你排了一个小小阅读路线：先从容易喜欢上的书开始，再慢慢走到更有挑战的好故事。`,
+        encouragement: randomFrom(hasInterest ? interestEncouragements : classicEncouragements),
+        selected,
+        reading_path: buildReadingPath(selected, topic),
+        parent_message: buildParentMessage(hasInterest, profile.grade),
+        follow_up_question: buildFollowUpQuestion(matchedTags, topic)
+      };
+    }
+
+    function getMatchedTags(text) {
+      const normalized = text.toLowerCase();
+      const tags = new Set();
+
+      keywordMap.forEach(([keyword, mappedTags]) => {
+        if (normalized.includes(keyword.toLowerCase())) {
+          mappedTags.forEach((tag) => tags.add(tag));
+        }
+      });
+
+      if (tags.size === 0) {
+        ["轻松", "成长", "冒险"].forEach((tag) => tags.add(tag));
+      }
+
+      return Array.from(tags);
+    }
+
+    function selectBooks(type, grade, matchedTags, history) {
+      const historyText = history.toLowerCase();
+      const config = typeConfig[type];
+      const preferredTags = matchedTags.length ? matchedTags : config.fallbackTags;
+
+      const ranked = books
+        .filter((book) => book.value_type === type && book.grades.includes(grade))
+        .map((book) => {
+          const tagScore = book.tags.reduce((score, tag) => score + (preferredTags.includes(tag) ? 3 : 0), 0);
+          const historyPenalty = historyText && historyText.includes(book.title.toLowerCase()) ? -6 : 0;
+          const fallbackScore = config.fallbackTags.some((tag) => book.tags.includes(tag)) ? 1 : 0;
+          return {
+            ...book,
+            score: tagScore + historyPenalty + fallbackScore
+          };
+        })
+        .sort((a, b) => b.score - a.score || a.title.localeCompare(b.title, "zh-CN"));
+
+      const chosen = ranked.filter((book) => book.score > -3).slice(0, 2);
+      if (chosen.length > 0) {
+        return chosen;
+      }
+
+      return books
+        .filter((book) => book.value_type === type)
+        .slice(0, 1);
+    }
+
+    function getTopic(query, tags) {
+      if (query.length <= 14) {
+        return `“${query}”这样的书`;
+      }
+
+      const topicWords = tags.slice(0, 2).join("、");
+      return topicWords ? `${topicWords}类的书` : "适合你的书";
+    }
+
+    function buildReadingPath(selected, topic) {
+      const first = selected["兴趣入口书"][0]?.title || selected["桥梁书"][0]?.title || "一本轻松的书";
+      const second = selected["桥梁书"][0]?.title || "一本桥梁书";
+      const third = selected["经典 / 拓展书"][0]?.title || "一本经典书";
+      return `可以先读《${first}》找感觉，再试试《${second}》把阅读时间拉长一点，最后挑战《${third}》。这条路从${topic}出发，不着急，读开心最重要。`;
+    }
+
+    function buildParentMessage(hasInterest, grade) {
+      if (hasInterest) {
+        return `${grade}孩子的阅读兴趣很需要被看见。可以先允许孩子从漫画、轻松故事或熟悉主题进入，再用同主题的桥梁书慢慢增加文字量。`;
+      }
+
+      return `${grade}孩子已经愿意接触经典和拓展阅读，可以多聊人物、情节和感受，不急着考内容，让好书继续保持亲近感。`;
+    }
+
+    function buildFollowUpQuestion(tags, topic) {
+      if (tags.includes("恐龙") || tags.includes("动物")) {
+        return "你最想认识哪一种动物或恐龙？";
+      }
+
+      if (tags.includes("侦探") || tags.includes("推理")) {
+        return "你喜欢自己猜谜底，还是喜欢跟着主角一起破案？";
+      }
+
+      if (tags.includes("科学") || tags.includes("科普")) {
+        return "你最想知道世界上的哪个小秘密？";
+      }
+
+      if (tags.includes("漫画") || tags.includes("搞笑")) {
+        return "你喜欢让人哈哈大笑的故事，还是轻松又温暖的故事？";
+      }
+
+      return `如果再选一本${topic}，你希望它更好笑、更刺激，还是更温暖？`;
+    }
+
+    function renderResult(result) {
+      document.querySelector("#greetingText").textContent = `${result.name} 同学，${result.grade}你好呀！`;
+      document.querySelector("#childResponse").textContent = result.child_response;
+      document.querySelector("#encouragementText").textContent = result.encouragement;
+
+      renderBookList("兴趣入口书", result.selected["兴趣入口书"]);
+      renderBookList("桥梁书", result.selected["桥梁书"]);
+      renderBookList("经典 / 拓展书", result.selected["经典 / 拓展书"]);
+
+      document.querySelector("#readingPath").textContent = result.reading_path;
+      document.querySelector("#parentMessage").textContent = result.parent_message;
+      document.querySelector("#followQuestion").textContent = result.follow_up_question;
+    }
+
+    function renderBookList(type, list) {
+      const config = typeConfig[type];
+      const target = document.querySelector(`#${config.id}`);
+      target.innerHTML = "";
+
+      if (!list.length) {
+        target.innerHTML = '<p class="empty-note">这层暂时没有找到特别合适的书，可以先从上一层开始读。</p>';
+        return;
+      }
+
+      list.forEach((book) => {
+        const card = document.createElement("article");
+        card.className = `book-card ${config.className}`;
+        card.innerHTML = `
+          <h3 class="book-title">《${escapeHtml(book.title)}》</h3>
+          <p class="book-author">作者：${escapeHtml(book.author)}</p>
+          <p class="reason">${escapeHtml(book.reason)}</p>
+        `;
+        target.appendChild(card);
+      });
+    }
+
+    function showError(message) {
+      errorBox.textContent = message;
+      errorBox.classList.add("show");
+    }
+
+    function hideError() {
+      errorBox.textContent = "";
+      errorBox.classList.remove("show");
+    }
+
+    function randomFrom(items) {
+      return items[Math.floor(Math.random() * items.length)];
+    }
+
+    function escapeHtml(value) {
+      return String(value)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+  </script>
+</body>
+</html>
