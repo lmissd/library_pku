@@ -761,6 +761,7 @@
     const STATE_KEY = "pkuReadingH5StateV2";
     const REQUEST_TIMEOUT = 15000;
     const WORKFLOW_API_URL = "https://cqccmb7q97.coze.site/run";
+    const USE_LOCAL_LIBRARY_FIRST = true;
 
     const DEFAULT_LIBRARY_CANDIDATES = [
       "《米小圈上学记》|北猫|文学/校园|一层儿童文学 A-03",
@@ -1164,6 +1165,10 @@
         library_candidates: DEFAULT_LIBRARY_CANDIDATES,
         ...overrides
       };
+
+      if (USE_LOCAL_LIBRARY_FIRST) {
+        return buildLocalWorkflowResponse(body);
+      }
 
       const controller = new AbortController();
       const timer = window.setTimeout(() => controller.abort(), REQUEST_TIMEOUT);
