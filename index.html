@@ -90,6 +90,36 @@
       font-size: 0.92rem;
     }
 
+    .mode-switch {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin: 0 0 16px;
+      padding: 5px;
+      border: 1px solid rgba(240, 223, 207, 0.9);
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.72);
+      box-shadow: 0 8px 18px rgba(117, 76, 43, 0.07);
+    }
+
+    .mode-btn {
+      min-height: 44px;
+      border: 0;
+      border-radius: 10px;
+      color: var(--muted);
+      background: transparent;
+      cursor: pointer;
+      font-weight: 850;
+      transition: color 0.16s ease, background 0.16s ease, box-shadow 0.16s ease;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .mode-btn.active {
+      color: #fff;
+      background: linear-gradient(135deg, var(--primary), #ff8a4b);
+      box-shadow: 0 8px 16px rgba(255, 107, 53, 0.22);
+    }
+
     .panel,
     .result-block,
     .book-card {
@@ -364,6 +394,59 @@
       color: #51463f;
     }
 
+    .adult-summary {
+      margin: 0;
+      color: #51463f;
+      background: #fff;
+      border-left: 5px solid var(--blue);
+      border-radius: 12px;
+      padding: 13px 14px;
+      box-shadow: var(--shadow);
+    }
+
+    .record-list {
+      display: grid;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .record-card {
+      border: 1px solid rgba(240, 223, 207, 0.85);
+      border-radius: 12px;
+      background: #fffdfb;
+      padding: 12px;
+    }
+
+    .record-card h4 {
+      margin: 0 0 7px;
+      font-size: 0.98rem;
+    }
+
+    .record-card p {
+      margin: 5px 0 0;
+    }
+
+    .record-meta {
+      color: var(--muted);
+      font-size: 0.86rem;
+    }
+
+    .pill-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+      margin-top: 9px;
+    }
+
+    .pill {
+      border-radius: 999px;
+      color: #66564d;
+      background: #fff0e7;
+      padding: 5px 9px;
+      font-size: 0.82rem;
+      font-weight: 750;
+    }
+
     .parent {
       background: #f5fbff;
       border-color: rgba(74, 144, 217, 0.2);
@@ -402,6 +485,11 @@
         <p class="subtitle">说一句想看的书，我来帮你找</p>
       </div>
     </header>
+
+    <nav class="mode-switch" aria-label="使用端选择">
+      <button id="childModeBtn" class="mode-btn active" type="button" data-mode="child">小朋友端</button>
+      <button id="adultModeBtn" class="mode-btn" type="button" data-mode="adult">家长 / 老师端</button>
+    </nav>
 
     <section id="inputView" class="panel" aria-labelledby="formTitle">
       <h2 id="formTitle" class="greeting">今天想读什么呀？</h2>
@@ -454,6 +542,35 @@
       <div id="errorBox" class="error" role="alert"></div>
     </section>
 
+    <section id="adultInputView" class="panel hidden" aria-labelledby="adultFormTitle">
+      <h2 id="adultFormTitle" class="greeting">查看孩子的阅读记录</h2>
+      <p class="hello">输入孩子的虚拟姓名和年级，查看本机测试记录。</p>
+
+      <form id="adultForm" class="form-grid">
+        <label>
+          孩子姓名
+          <input id="adultNameInput" type="text" autocomplete="off" placeholder="例如：小明" required>
+        </label>
+
+        <label>
+          年级
+          <select id="adultGradeInput" required>
+            <option value="">请选择年级</option>
+            <option value="一年级">一年级</option>
+            <option value="二年级">二年级</option>
+            <option value="三年级">三年级</option>
+            <option value="四年级">四年级</option>
+            <option value="五年级">五年级</option>
+            <option value="六年级">六年级</option>
+          </select>
+        </label>
+
+        <button class="primary-btn" type="submit">查看阅读记录</button>
+      </form>
+
+      <div id="adultErrorBox" class="error" role="alert"></div>
+    </section>
+
     <section id="resultView" class="hidden" aria-live="polite">
       <div class="result-head">
         <p id="greetingText" class="greeting"></p>
@@ -476,22 +593,36 @@
         <div id="classicList" class="book-list"></div>
       </div>
 
+      <button id="resetBtn" class="secondary-btn" type="button">再找一次</button>
+    </section>
+
+    <section id="adultResultView" class="hidden" aria-live="polite">
+      <div class="result-head">
+        <p id="adultGreetingText" class="greeting"></p>
+        <p id="adultSummary" class="adult-summary"></p>
+      </div>
+
       <div class="result-block">
-        <h3>阅读路径</h3>
-        <p id="readingPath"></p>
+        <h3>孩子的阅读记录</h3>
+        <div id="recordList" class="record-list"></div>
+      </div>
+
+      <div class="result-block">
+        <h3>推荐阅读路径</h3>
+        <p id="adultReadingPath"></p>
       </div>
 
       <div class="result-block parent">
         <h3>给家长的建议</h3>
-        <p id="parentMessage"></p>
+        <p id="adultParentMessage"></p>
       </div>
 
       <div class="result-block follow">
         <h3>可以继续问问孩子</h3>
-        <p id="followQuestion"></p>
+        <p id="adultFollowQuestion"></p>
       </div>
 
-      <button id="resetBtn" class="secondary-btn" type="button">再找一次</button>
+      <button id="adultResetBtn" class="secondary-btn" type="button">重新查询</button>
     </section>
   </main>
 
@@ -676,13 +807,27 @@
       }
     };
 
+    const STORAGE_KEY = "libraryPkuReadingLogsV1";
+
     const form = document.querySelector("#bookForm");
+    const adultForm = document.querySelector("#adultForm");
     const inputView = document.querySelector("#inputView");
+    const adultInputView = document.querySelector("#adultInputView");
     const resultView = document.querySelector("#resultView");
+    const adultResultView = document.querySelector("#adultResultView");
     const loading = document.querySelector("#loading");
     const errorBox = document.querySelector("#errorBox");
+    const adultErrorBox = document.querySelector("#adultErrorBox");
     const queryInput = document.querySelector("#queryInput");
     const resetBtn = document.querySelector("#resetBtn");
+    const adultResetBtn = document.querySelector("#adultResetBtn");
+    const modeButtons = document.querySelectorAll(".mode-btn");
+
+    modeButtons.forEach((button) => {
+      button.addEventListener("click", () => {
+        switchMode(button.dataset.mode);
+      });
+    });
 
     document.querySelectorAll(".tag-btn").forEach((button) => {
       button.addEventListener("click", () => {
@@ -709,12 +854,43 @@
 
       window.setTimeout(() => {
         const result = buildRecommendation({ name, grade, query, history });
+        saveReadingLog({
+          name,
+          grade,
+          query,
+          history,
+          result
+        });
         renderResult(result);
         loading.classList.remove("show");
         inputView.classList.add("hidden");
         resultView.classList.remove("hidden");
         window.scrollTo({ top: 0, behavior: "smooth" });
       }, 520);
+    });
+
+    adultForm.addEventListener("submit", (event) => {
+      event.preventDefault();
+      hideAdultError();
+
+      const name = document.querySelector("#adultNameInput").value.trim();
+      const grade = document.querySelector("#adultGradeInput").value;
+
+      if (!name || !grade) {
+        showAdultError("请先写好孩子的姓名和年级，再查询阅读记录。");
+        return;
+      }
+
+      const logs = findReadingLogs(name, grade);
+      if (!logs.length) {
+        showAdultError("还没有找到这个孩子的测试记录。可以先让孩子在小朋友端找一次书。");
+        return;
+      }
+
+      renderAdultResult({ name, grade, logs });
+      adultInputView.classList.add("hidden");
+      adultResultView.classList.remove("hidden");
+      window.scrollTo({ top: 0, behavior: "smooth" });
     });
 
     resetBtn.addEventListener("click", () => {
@@ -725,6 +901,30 @@
       form.reset();
       window.scrollTo({ top: 0, behavior: "smooth" });
     });
+
+    adultResetBtn.addEventListener("click", () => {
+      adultResultView.classList.add("hidden");
+      adultInputView.classList.remove("hidden");
+      hideAdultError();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    });
+
+    function switchMode(mode) {
+      const isAdult = mode === "adult";
+
+      modeButtons.forEach((button) => {
+        button.classList.toggle("active", button.dataset.mode === mode);
+      });
+
+      inputView.classList.toggle("hidden", isAdult);
+      adultInputView.classList.toggle("hidden", !isAdult);
+      resultView.classList.add("hidden");
+      adultResultView.classList.add("hidden");
+      loading.classList.remove("show");
+      hideError();
+      hideAdultError();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
 
     function buildRecommendation(profile) {
       const matchedTags = getMatchedTags(profile.query + " " + profile.history);
@@ -846,10 +1046,43 @@
       renderBookList("兴趣入口书", result.selected["兴趣入口书"]);
       renderBookList("桥梁书", result.selected["桥梁书"]);
       renderBookList("经典 / 拓展书", result.selected["经典 / 拓展书"]);
+    }
 
-      document.querySelector("#readingPath").textContent = result.reading_path;
-      document.querySelector("#parentMessage").textContent = result.parent_message;
-      document.querySelector("#followQuestion").textContent = result.follow_up_question;
+    function renderAdultResult({ name, grade, logs }) {
+      const latest = logs[0];
+      const latestResult = latest.result;
+
+      document.querySelector("#adultGreetingText").textContent = `${name} 同学，${grade}阅读观察`;
+      document.querySelector("#adultSummary").textContent = `共找到 ${logs.length} 条测试记录。最近一次想看的是：“${latest.query}”。`;
+      document.querySelector("#adultReadingPath").textContent = latestResult.reading_path;
+      document.querySelector("#adultParentMessage").textContent = latestResult.parent_message;
+      document.querySelector("#adultFollowQuestion").textContent = latestResult.follow_up_question;
+      renderRecordList(logs);
+    }
+
+    function renderRecordList(logs) {
+      const target = document.querySelector("#recordList");
+      target.innerHTML = "";
+
+      logs.forEach((log, index) => {
+        const card = document.createElement("article");
+        card.className = "record-card";
+
+        const recommendedTitles = flattenBooks(log.result.selected)
+          .map((book) => `《${book.title}》`)
+          .slice(0, 6);
+
+        card.innerHTML = `
+          <h4>第 ${logs.length - index} 次找书</h4>
+          <p class="record-meta">${formatTime(log.created_at)}</p>
+          <p><strong>孩子想看：</strong>${escapeHtml(log.query)}</p>
+          <p><strong>借阅记录：</strong>${escapeHtml(log.history || "未填写")}</p>
+          <div class="pill-row">
+            ${recommendedTitles.map((title) => `<span class="pill">${escapeHtml(title)}</span>`).join("")}
+          </div>
+        `;
+        target.appendChild(card);
+      });
     }
 
     function renderBookList(type, list) {
@@ -882,6 +1115,79 @@
     function hideError() {
       errorBox.textContent = "";
       errorBox.classList.remove("show");
+    }
+
+    function showAdultError(message) {
+      adultErrorBox.textContent = message;
+      adultErrorBox.classList.add("show");
+    }
+
+    function hideAdultError() {
+      adultErrorBox.textContent = "";
+      adultErrorBox.classList.remove("show");
+    }
+
+    function saveReadingLog({ name, grade, query, history, result }) {
+      const logs = getReadingLogs();
+      logs.push({
+        id: `${Date.now()}-${Math.random().toString(16).slice(2)}`,
+        name,
+        grade,
+        query,
+        history,
+        normalized_name: normalizeName(name),
+        created_at: new Date().toISOString(),
+        result
+      });
+
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(logs.slice(-120)));
+      } catch (error) {
+        console.warn("Reading log was not saved.", error);
+      }
+    }
+
+    function findReadingLogs(name, grade) {
+      const normalizedName = normalizeName(name);
+      return getReadingLogs()
+        .filter((log) => log.normalized_name === normalizedName && log.grade === grade)
+        .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+    }
+
+    function getReadingLogs() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        return raw ? JSON.parse(raw) : [];
+      } catch (error) {
+        console.warn("Reading logs could not be loaded.", error);
+        return [];
+      }
+    }
+
+    function normalizeName(name) {
+      return name.trim().replace(/\s+/g, "").toLowerCase();
+    }
+
+    function flattenBooks(selected) {
+      return [
+        ...(selected["兴趣入口书"] || []),
+        ...(selected["桥梁书"] || []),
+        ...(selected["经典 / 拓展书"] || [])
+      ];
+    }
+
+    function formatTime(value) {
+      const date = new Date(value);
+      if (Number.isNaN(date.getTime())) {
+        return "时间未知";
+      }
+
+      return date.toLocaleString("zh-CN", {
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit"
+      });
     }
 
     function randomFrom(items) {
