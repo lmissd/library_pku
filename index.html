@@ -1538,7 +1538,11 @@
       if (error && error.name === "AbortError") {
         return "阅读助手等待太久了，可以稍后再试一次。";
       }
-      return error && error.message ? error.message : "阅读助手暂时连不上，请稍后再试一次。";
+      const message = error && error.message ? error.message : "";
+      if (!message || /failed to fetch|networkerror|load failed/i.test(message)) {
+        return "阅读助手暂时没有连上，请老师或图书馆老师先检查服务是否已经开启。";
+      }
+      return message;
     }
 
     function getResponseErrorMessage(status) {
