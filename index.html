@@ -210,6 +210,55 @@
       box-shadow: 0 0 0 4px rgba(255, 107, 53, 0.12);
     }
 
+    .voice-input {
+      display: grid;
+      gap: 8px;
+      margin-top: 2px;
+    }
+
+    .voice-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      gap: 8px;
+    }
+
+    .voice-btn {
+      min-height: 48px;
+      border: 1px solid rgba(78, 205, 196, 0.44);
+      border-radius: var(--radius);
+      background: var(--soft-blue);
+      color: #0F756F;
+      padding: 10px 13px;
+      font-weight: 950;
+      cursor: pointer;
+      transition: transform 0.14s ease, box-shadow 0.14s ease, background 0.14s ease;
+    }
+
+    .voice-btn:active {
+      transform: scale(0.98);
+    }
+
+    .voice-btn.listening {
+      color: #fff;
+      background: var(--pink);
+      border-color: rgba(255, 107, 157, 0.44);
+      box-shadow: 0 10px 20px rgba(255, 107, 157, 0.2);
+    }
+
+    .voice-btn:disabled {
+      cursor: not-allowed;
+      opacity: 0.62;
+      box-shadow: none;
+    }
+
+    .voice-status {
+      min-height: 22px;
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.88rem;
+      font-weight: 700;
+    }
+
     .quick-tags {
       display: flex;
       flex-wrap: wrap;
@@ -724,6 +773,11 @@
       .button-row.two {
         grid-template-columns: 1fr 1fr;
       }
+
+      .voice-row {
+        grid-template-columns: minmax(0, 1fr) 148px;
+        align-items: start;
+      }
     }
   </style>
 </head>
@@ -789,7 +843,13 @@
 
           <label>
             我喜欢什么书 / 想读什么
-            <textarea id="queryInput" placeholder="例如：我喜欢恐龙，也想读有趣一点的书" required></textarea>
+            <div class="voice-input">
+              <div class="voice-row">
+                <textarea id="queryInput" placeholder="例如：我喜欢恐龙，也想读有趣一点的书" required></textarea>
+                <button id="voiceInputBtn" class="voice-btn" type="button" aria-pressed="false">🎙️ 说给我听</button>
+              </div>
+              <p id="voiceStatus" class="voice-status" aria-live="polite">可以打字，也可以点按钮说出想读的书。</p>
+            </div>
           </label>
 
           <label>
@@ -1194,6 +1254,15 @@
       history: document.querySelector("#historyInput")
     };
 
+    const voiceInput = {
+      button: document.querySelector("#voiceInputBtn"),
+      status: document.querySelector("#voiceStatus"),
+      recognition: null,
+      supported: false,
+      listening: false,
+      finalText: ""
+    };
+
     let appState = createEmptyState();
     let activeLibrary = LOCAL_LIBRARY;
     let libraryLoadPromise = null;
@@ -1204,6 +1273,7 @@
     function initialize() {
       loadState();
       bindEvents();
+      setupVoiceInput();
       libraryLoadPromise = loadLibraryFromJson();
       renderFromState();
     }
@@ -1226,6 +1296,7 @@
       document.querySelector("#parentBackToChildBtn").addEventListener("click", enterChild);
       document.querySelector("#parentResetBtn").addEventListener("click", resetAll);
       document.querySelector("#freshStartBtn").addEventListener("click", resetAll);
+      voiceInput.button.addEventListener("click", toggleVoiceInput);
 
       document.querySelectorAll(".tag-btn").forEach((button) => {
         button.addEventListener("click", () => {
@@ -1240,6 +1311,120 @@
           saveDraftProfile();
         });
       });
+    }
+
+    function setupVoiceInput() {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRecognition) {
+        voiceInput.supported = false;
+        voiceInput.button.disabled = true;
+        voiceInput.button.textContent = "🎙️ 暂不支持";
+        voiceInput.status.textContent = "这台手机暂时不能直接语音输入，可以先用打字。";
+        return;
+      }
+
+      const recognition = new SpeechRecognition();
+      recognition.lang = "zh-CN";
+      recognition.continuous = false;
+      recognition.interimResults = true;
+      recognition.maxAlternatives = 1;
+
+      recognition.onstart = () => {
+        voiceInput.listening = true;
+        voiceInput.finalText = fields.query.value.trim();
+        updateVoiceUi("正在听你说话，可以说“我想看动物故事”这样的句子。");
+      };
+
+      recognition.onresult = (event) => {
+        let finalTranscript = "";
+        let interimTranscript = "";
+
+        for (let index = event.resultIndex; index < event.results.length; index += 1) {
+          const transcript = event.results[index][0].transcript.trim();
+          if (event.results[index].isFinal) {
+            finalTranscript += transcript;
+          } else {
+            interimTranscript += transcript;
+          }
+        }
+
+        const recognizedText = [finalTranscript, interimTranscript].filter(Boolean).join("");
+        if (recognizedText) {
+          const baseText = voiceInput.finalText || "";
+          fields.query.value = mergeVoiceText(baseText, recognizedText);
+          saveDraftProfile();
+          updateVoiceUi(interimTranscript ? `我听到：${interimTranscript}` : "已经记下来了。");
+        }
+      };
+
+      recognition.onerror = (event) => {
+        const friendlyMessage = getVoiceErrorMessage(event.error);
+        voiceInput.listening = false;
+        updateVoiceUi(friendlyMessage);
+        showToast(friendlyMessage);
+      };
+
+      recognition.onend = () => {
+        voiceInput.listening = false;
+        const hasText = Boolean(fields.query.value.trim());
+        updateVoiceUi(hasText ? "语音输入完成，可以继续修改，也可以直接帮你找书。" : "没有听清楚，可以再试一次或直接打字。");
+      };
+
+      voiceInput.recognition = recognition;
+      voiceInput.supported = true;
+      updateVoiceUi("可以打字，也可以点按钮说出想读的书。");
+    }
+
+    function toggleVoiceInput() {
+      if (!voiceInput.supported || !voiceInput.recognition) {
+        showToast("这台手机暂时不能直接语音输入，可以先用打字。");
+        return;
+      }
+
+      if (voiceInput.listening) {
+        voiceInput.recognition.stop();
+        return;
+      }
+
+      try {
+        hideToast();
+        voiceInput.recognition.start();
+      } catch (error) {
+        showToast("语音输入刚刚还没准备好，请稍等一下再点。");
+      }
+    }
+
+    function updateVoiceUi(message) {
+      voiceInput.button.classList.toggle("listening", voiceInput.listening);
+      voiceInput.button.setAttribute("aria-pressed", voiceInput.listening ? "true" : "false");
+      voiceInput.button.textContent = voiceInput.listening ? "■ 停止录音" : "🎙️ 说给我听";
+      voiceInput.status.textContent = message;
+    }
+
+    function mergeVoiceText(baseText, recognizedText) {
+      const cleaned = recognizedText.replace(/\s+/g, "");
+      if (!cleaned) {
+        return baseText;
+      }
+      if (!baseText) {
+        return cleaned;
+      }
+      if (baseText.includes(cleaned)) {
+        return baseText;
+      }
+      return `${baseText} ${cleaned}`;
+    }
+
+    function getVoiceErrorMessage(errorType) {
+      const messages = {
+        "not-allowed": "没有拿到麦克风权限，可以允许麦克风后再试一次。",
+        "service-not-allowed": "当前浏览器没有开放语音输入服务，可以换浏览器或直接打字。",
+        "no-speech": "刚才没有听到声音，可以靠近手机再试一次。",
+        "audio-capture": "没有检测到麦克风，请检查手机麦克风权限。",
+        "network": "语音识别需要浏览器服务支持，当前网络可能暂时不可用。"
+      };
+
+      return messages[errorType] || "语音输入暂时没有成功，可以再试一次或直接打字。";
     }
 
     async function handleInterestSubmit(event) {
