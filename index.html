@@ -1426,35 +1426,39 @@
 
     function buildLocalRecommendation(body) {
       const gradeNumber = gradeToNumber(body.grade);
-      const interestText = expandInterestText(`${body.user_query || ""} ${body.reading_history || ""}`);
+      const interestProfile = buildInterestProfile(body.user_query || "");
       const ranked = LOCAL_LIBRARY
         .map((book) => ({
           book,
-          relevance: scoreLocalRelevance(book, interestText),
-          score: scoreLocalBook(book, interestText, gradeNumber, body.reading_history || "")
+          relevance: scoreLocalRelevance(book, interestProfile),
+          score: scoreLocalBook(book, interestProfile, gradeNumber, body.reading_history || "")
         }))
         .sort((a, b) => b.score - a.score || a.book.title.localeCompare(b.book.title, "zh-Hans-CN"));
 
       const byLevel = {
-        interest_books: pickLocalBooks(ranked, "interest_books", 2),
-        bridge_books: pickLocalBooks(ranked, "bridge_books", 2),
-        classic_books: pickLocalBooks(ranked, "classic_books", 2)
+        interest_books: pickLocalBooks(ranked, "interest_books", 2, interestProfile.enforceRelevance),
+        bridge_books: pickLocalBooks(ranked, "bridge_books", 2, interestProfile.enforceRelevance),
+        classic_books: pickLocalBooks(ranked, "classic_books", 2, interestProfile.enforceRelevance)
       };
+      const totalBooks = Object.values(byLevel).reduce((count, books) => count + books.length, 0);
+      const childResponse = totalBooks
+        ? `我先从“${body.user_query || "你的兴趣"}”出发，只显示和这个主题比较相关的书。没匹配到的层级先不凑数。`
+        : `我按“${body.user_query || "你的兴趣"}”找了一遍，本地书库暂时没有特别匹配的书。可以换个说法再试试，或者请老师补充这个主题的馆藏。`;
 
       return {
-        child_response: `我先从“${body.user_query || "你的兴趣"}”出发，帮你配了一条可以慢慢升级的阅读路线。先读轻松好进入的书，再试一试桥梁书，最后挑战经典或拓展书。`,
+        child_response: childResponse,
         recommendations: byLevel,
-        reading_path: "兴趣入口书先把阅读兴趣点亮；桥梁书帮助你读更完整的故事；经典 / 拓展书适合读完后继续挑战。",
-        parent_message: "这是临时本地书库推荐结果。可以让孩子先选最想读的一本，读完后用小问答观察是否读懂人物、情节和主题。",
-        follow_up_question: "你想先读最搞笑的一本，还是最有冒险感的一本？"
+        reading_path: totalBooks ? "先从最贴近兴趣的书进入；如果某一层暂时没有匹配书，就不要勉强跨主题补位。" : "当前本地书库没有足够匹配书目，建议补充馆藏或换一个更常见的主题词。",
+        parent_message: totalBooks ? "这是临时本地书库推荐结果。系统已尽量过滤明显不相关主题，建议让孩子先从真正感兴趣的一本开始。" : "这次没有找到匹配书，不代表孩子兴趣不合适，只是当前本地书库还不够丰富。",
+        follow_up_question: totalBooks ? "这些书里，哪一本最像你现在真的想读的？" : "可以再试试更具体的说法，比如动物、恐龙、校园、侦探、神话或科普。"
       };
     }
 
-    function pickLocalBooks(ranked, level, limit) {
+    function pickLocalBooks(ranked, level, limit, enforceRelevance) {
       const sameLevel = ranked.filter((item) => item.book.level === level);
       const relevant = sameLevel.filter((item) => item.relevance > 0);
-      let picked = (relevant.length ? relevant : sameLevel).slice(0, limit);
-      if (!picked.length) {
+      let picked = (enforceRelevance ? relevant : relevant.length ? relevant : sameLevel).slice(0, limit);
+      if (!picked.length && !enforceRelevance) {
         picked = LOCAL_LIBRARY
           .filter((book) => book.level === level)
           .slice(0, limit)
@@ -1577,17 +1581,62 @@
         || null;
     }
 
-    function scoreLocalRelevance(book, interestText) {
-      const haystack = expandInterestText(`${book.title} ${book.author} ${book.category} ${book.summary} ${book.reason_for_child} ${book.tags.join(" ")}`);
+    function buildInterestProfile(value) {
+      const rawText = textOf(value).toLowerCase();
+      const groups = getInterestGroups(rawText);
+      const specificGroups = groups.filter((group) => group.kind === "specific");
+      const activeGroups = specificGroups.length ? specificGroups : groups;
+
+      return {
+        activeGroups,
+        expandedText: expandInterestText(rawText),
+        enforceRelevance: shouldEnforceRelevance(rawText)
+      };
+    }
+
+    function getInterestGroups(text) {
+      const groups = [
+        { kind: "specific", pattern: /漫画|连环画/, terms: ["漫画", "连环画"] },
+        { kind: "specific", pattern: /图画|绘本/, terms: ["图画", "绘本"] },
+        { kind: "specific", pattern: /搞笑|好笑|幽默|笑/, terms: ["搞笑", "幽默", "好笑"] },
+        { kind: "specific", pattern: /恐龙|霸王龙|动物/, terms: ["恐龙", "霸王龙", "动物", "自然", "森林", "观察"] },
+        { kind: "specific", pattern: /科学|科普|实验|自然/, terms: ["科学", "科普", "实验", "自然", "观察"] },
+        { kind: "specific", pattern: /侦探|破案|推理|悬疑/, terms: ["侦探", "破案", "推理", "悬疑"] },
+        { kind: "specific", pattern: /校园|同学|老师|上学/, terms: ["校园", "同学", "老师", "上学"] },
+        { kind: "specific", pattern: /神话|传统|中国故事/, terms: ["神话", "传统文化", "中国故事"] },
+        { kind: "specific", pattern: /经典|长一点|挑战/, terms: ["经典", "成长", "哲思"] },
+        { kind: "broad", pattern: /冒险|刺激|探险/, terms: ["冒险", "探险", "勇敢", "伙伴"] },
+        { kind: "broad", pattern: /有趣|好玩|好看/, terms: ["有趣", "好玩", "轻松"] },
+        { kind: "preference", pattern: /不想看太厚|不要太厚|别太厚|太厚|薄|短|简单|轻松/, terms: ["薄一点", "轻松", "短", "简单"] }
+      ];
+
+      return groups.filter((group) => group.pattern.test(text));
+    }
+
+    function shouldEnforceRelevance(value) {
+      const text = textOf(value).toLowerCase();
+      const genericOnly = text
+        .replace(/我|想|要|读|看|喜欢|一本|一些|有关|相关|的|书|书籍|故事|可以|推荐|帮我|给我|和|跟|也|吗|呀|呢|啊|。|，|、|\s/g, "");
+      return genericOnly.length >= 2;
+    }
+
+    function scoreLocalRelevance(book, interestProfile) {
+      const haystack = buildBookSearchText(book);
       let relevance = 0;
 
-      book.tags.forEach((tag) => {
-        if (interestText.includes(tag)) {
-          relevance += 8;
+      if (interestProfile.activeGroups.length) {
+        const groupScores = interestProfile.activeGroups.map((group) => scoreInterestGroup(haystack, group));
+        if (interestProfile.enforceRelevance && groupScores.some((score) => score === 0)) {
+          return 0;
         }
-      });
+        return groupScores.reduce((sum, score) => sum + score, 0) + (groupScores.every((score) => score > 0) ? 6 : 0);
+      }
 
-      getSearchTerms(interestText).forEach((term) => {
+      if (interestProfile.enforceRelevance) {
+        return 0;
+      }
+
+      getSearchTerms(interestProfile.expandedText).forEach((term) => {
         if (haystack.includes(term)) {
           relevance += 5;
         }
@@ -1596,9 +1645,17 @@
       return relevance;
     }
 
-    function scoreLocalBook(book, interestText, gradeNumber, readingHistory) {
+    function buildBookSearchText(book) {
+      return textOf(`${book.title} ${book.author} ${book.category} ${book.summary} ${book.tags.join(" ")}`).toLowerCase();
+    }
+
+    function scoreInterestGroup(haystack, group) {
+      return group.terms.reduce((score, term) => score + (haystack.includes(term) ? 10 : 0), 0);
+    }
+
+    function scoreLocalBook(book, interestProfile, gradeNumber, readingHistory) {
       const history = textOf(readingHistory);
-      let score = scoreLocalRelevance(book, interestText);
+      let score = scoreLocalRelevance(book, interestProfile);
 
       if (Number.isFinite(gradeNumber)) {
         if (gradeNumber >= book.minGrade && gradeNumber <= book.maxGrade) {
@@ -1622,6 +1679,7 @@
       const expansions = [
         [/漫画|图画|绘本|连环画/, " 漫画 图画 绘本 轻松"],
         [/搞笑|好笑|幽默|笑/, " 搞笑 幽默 轻松"],
+        [/有趣|好玩|好看/, " 有趣 好玩 轻松 故事"],
         [/恐龙|霸王龙|动物/, " 恐龙 动物 科普 自然"],
         [/科学|科普|实验|自然/, " 科普 科学 自然"],
         [/侦探|破案|推理|悬疑/, " 侦探 推理 冒险"],
@@ -1629,7 +1687,7 @@
         [/校园|同学|老师|上学/, " 校园 上学 朋友"],
         [/神话|传统|中国故事/, " 神话 传统文化 中国"],
         [/经典|长一点|挑战/, " 经典 成长 哲思"],
-        [/薄|短|简单|轻松/, " 薄一点 轻松"]
+        [/不想看太厚|不要太厚|别太厚|太厚|薄|短|简单|轻松/, " 薄一点 轻松 短 简单"]
       ];
 
       expansions.forEach(([pattern, extra]) => {
@@ -1713,7 +1771,7 @@
 
       const totalBooks = GROUPS.reduce((count, group) => count + normalized.recommendations[group.key].length, 0);
       if (!totalBooks) {
-        throw new Error("阅读助手暂时没有找到合适的书，请稍后再试一次。");
+        normalized.child_response = normalized.child_response || "本地书库暂时没有找到和这个主题匹配的书，可以换一个说法再试试。";
       }
 
       return normalized;
@@ -1858,7 +1916,7 @@
         if (!list.length) {
           const empty = document.createElement("p");
           empty.className = "empty-note";
-          empty.textContent = "这一层暂时没有合适的书，可以先看看其他层。";
+          empty.textContent = "这一层暂时没有和主题匹配的书，先看看其他层，不用勉强凑数。";
           target.appendChild(empty);
           return;
         }
