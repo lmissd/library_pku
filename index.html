@@ -3,22 +3,24 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>北大附小图书馆・智能阅读伙伴</title>
+  <title>北大附小智能阅读推荐</title>
   <style>
     :root {
-      --bg: #fff8f0;
-      --paper: #ffffff;
-      --ink: #2d2520;
-      --muted: #796d64;
-      --primary: #ff6b35;
-      --primary-dark: #e75522;
-      --blue: #4a90d9;
-      --green: #58a96b;
-      --soft-orange: #fff0e7;
-      --soft-blue: #eef7ff;
-      --soft-green: #effaf1;
-      --line: #f0dfcf;
-      --shadow: 0 10px 28px rgba(117, 76, 43, 0.11);
+      --bg: #FFF8F0;
+      --paper: #FFFFFF;
+      --ink: #2D2520;
+      --muted: #75695F;
+      --primary: #FF6B35;
+      --primary-dark: #D94E1F;
+      --blue: #4ECDC4;
+      --pink: #FF6B9D;
+      --yellow: #FFD166;
+      --line: #EFDCCA;
+      --soft-orange: #FFF0E7;
+      --soft-blue: #E9FAF8;
+      --soft-pink: #FFF0F6;
+      --shadow: 0 10px 24px rgba(120, 78, 45, 0.12);
+      --radius: 8px;
     }
 
     * {
@@ -34,9 +36,8 @@
       min-height: 100vh;
       color: var(--ink);
       background:
-        radial-gradient(circle at 20% 8%, rgba(255, 205, 133, 0.38), transparent 28%),
-        radial-gradient(circle at 86% 18%, rgba(119, 187, 237, 0.25), transparent 24%),
-        var(--bg);
+        linear-gradient(180deg, rgba(255, 248, 240, 0.96), rgba(255, 248, 240, 1)),
+        repeating-linear-gradient(135deg, rgba(255, 209, 102, 0.15) 0 10px, transparent 10px 22px);
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
       line-height: 1.55;
     }
@@ -48,93 +49,142 @@
       font: inherit;
     }
 
+    button {
+      -webkit-tap-highlight-color: transparent;
+    }
+
     .app {
-      width: min(100%, 520px);
-      margin: 0 auto;
+      width: min(100%, 560px);
       min-height: 100vh;
-      padding: 18px 16px 28px;
+      margin: 0 auto;
+      padding: 16px 14px 28px;
     }
 
     .topbar {
       display: flex;
       align-items: center;
-      gap: 10px;
-      margin-bottom: 18px;
+      gap: 11px;
       padding-top: env(safe-area-inset-top);
+      margin-bottom: 14px;
     }
 
     .logo {
       display: grid;
-      flex: 0 0 42px;
-      width: 42px;
-      height: 42px;
       place-items: center;
-      border-radius: 12px;
+      flex: 0 0 46px;
+      width: 46px;
+      height: 46px;
+      border-radius: 14px;
       color: #fff;
-      background: linear-gradient(135deg, var(--primary), #ff9e56);
-      box-shadow: 0 8px 18px rgba(255, 107, 53, 0.24);
-      font-size: 1.3rem;
-      font-weight: 800;
+      background: var(--primary);
+      box-shadow: 0 8px 18px rgba(255, 107, 53, 0.25);
+      font-size: 1.35rem;
+      font-weight: 900;
+    }
+
+    h1,
+    h2,
+    h3,
+    p {
+      margin-top: 0;
     }
 
     h1 {
-      margin: 0;
-      font-size: 1.22rem;
+      margin-bottom: 3px;
+      font-size: 1.26rem;
       line-height: 1.25;
       letter-spacing: 0;
     }
 
     .subtitle {
-      margin: 3px 0 0;
+      margin-bottom: 0;
       color: var(--muted);
-      font-size: 0.92rem;
+      font-size: 0.95rem;
     }
 
-    .mode-switch {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px;
-      margin: 0 0 16px;
-      padding: 5px;
-      border: 1px solid rgba(240, 223, 207, 0.9);
-      border-radius: 12px;
-      background: rgba(255, 255, 255, 0.72);
-      box-shadow: 0 8px 18px rgba(117, 76, 43, 0.07);
+    .settings {
+      margin-bottom: 14px;
+      border: 1px solid rgba(239, 220, 202, 0.95);
+      border-radius: var(--radius);
+      background: rgba(255, 255, 255, 0.94);
+      box-shadow: 0 6px 16px rgba(120, 78, 45, 0.08);
+      overflow: hidden;
     }
 
-    .mode-btn {
-      min-height: 44px;
-      border: 0;
-      border-radius: 10px;
-      color: var(--muted);
-      background: transparent;
+    .settings summary {
+      min-height: 46px;
+      padding: 12px 14px;
       cursor: pointer;
-      font-weight: 850;
-      transition: color 0.16s ease, background 0.16s ease, box-shadow 0.16s ease;
-      -webkit-tap-highlight-color: transparent;
+      color: var(--primary-dark);
+      font-weight: 900;
+      list-style-position: inside;
     }
 
-    .mode-btn.active {
+    .settings-body {
+      display: grid;
+      gap: 12px;
+      padding: 0 14px 14px;
+    }
+
+    .stepper {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+
+    .step {
+      min-height: 44px;
+      border: 1px solid rgba(239, 220, 202, 0.95);
+      border-radius: var(--radius);
+      background: rgba(255, 255, 255, 0.86);
+      color: var(--muted);
+      display: grid;
+      place-items: center;
+      text-align: center;
+      padding: 6px;
+      font-size: 0.9rem;
+      font-weight: 850;
+    }
+
+    .step.active {
+      border-color: rgba(255, 107, 53, 0.34);
       color: #fff;
-      background: linear-gradient(135deg, var(--primary), #ff8a4b);
-      box-shadow: 0 8px 16px rgba(255, 107, 53, 0.22);
+      background: var(--primary);
+      box-shadow: 0 8px 16px rgba(255, 107, 53, 0.2);
+    }
+
+    .step.done {
+      border-color: rgba(78, 205, 196, 0.34);
+      color: #177A73;
+      background: var(--soft-blue);
+    }
+
+    .view {
+      animation: fadeIn 0.24s ease;
+    }
+
+    .hidden {
+      display: none !important;
     }
 
     .panel,
-    .result-block,
-    .book-card {
-      border: 1px solid rgba(240, 223, 207, 0.85);
-      border-radius: 12px;
-      background: rgba(255, 255, 255, 0.93);
+    .book-card,
+    .note-block,
+    .question-card,
+    .feedback-card {
+      border: 1px solid rgba(239, 220, 202, 0.95);
+      border-radius: var(--radius);
+      background: rgba(255, 255, 255, 0.96);
       box-shadow: var(--shadow);
     }
 
     .panel {
-      padding: 18px;
+      padding: 17px;
     }
 
     .hello {
-      margin: 0 0 16px;
+      margin-bottom: 16px;
       color: var(--muted);
       font-size: 1rem;
     }
@@ -147,14 +197,14 @@
     label {
       display: grid;
       gap: 7px;
-      color: #483c34;
-      font-weight: 700;
+      color: #463A33;
+      font-weight: 850;
     }
 
     .hint {
       color: var(--muted);
-      font-size: 0.86rem;
-      font-weight: 500;
+      font-size: 0.88rem;
+      font-weight: 600;
     }
 
     input,
@@ -162,17 +212,17 @@
     textarea {
       width: 100%;
       min-height: 48px;
-      border: 1.5px solid #ead9c8;
-      border-radius: 12px;
+      border: 1.5px solid #E9D5C3;
+      border-radius: var(--radius);
       outline: none;
-      background: #fffdfb;
+      background: #FFFDFC;
       color: var(--ink);
       padding: 12px 13px;
       transition: border-color 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
     }
 
     textarea {
-      min-height: 86px;
+      min-height: 88px;
       resize: vertical;
     }
 
@@ -184,85 +234,380 @@
       box-shadow: 0 0 0 4px rgba(255, 107, 53, 0.12);
     }
 
-    .primary-btn,
-    .secondary-btn {
-      width: 100%;
-      min-height: 50px;
-      border: 0;
-      border-radius: 12px;
-      cursor: pointer;
-      font-weight: 800;
-      transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
-      -webkit-tap-highlight-color: transparent;
-    }
-
-    .primary-btn {
-      margin-top: 4px;
-      color: #fff;
-      background: linear-gradient(135deg, var(--primary), #ff8a4b);
-      box-shadow: 0 12px 24px rgba(255, 107, 53, 0.24);
-    }
-
-    .secondary-btn {
-      margin-top: 16px;
-      color: var(--primary-dark);
-      background: #fff0e7;
-      border: 1px solid rgba(255, 107, 53, 0.22);
-    }
-
-    .primary-btn:active,
-    .secondary-btn:active {
-      transform: translateY(1px) scale(0.99);
-    }
-
     .quick-tags {
       display: flex;
       flex-wrap: wrap;
       gap: 8px;
-      margin-top: 10px;
+    }
+
+    .tag-btn,
+    .ghost-btn,
+    .secondary-btn,
+    .primary-btn {
+      min-height: 46px;
+      border-radius: var(--radius);
+      cursor: pointer;
+      font-weight: 900;
+      transition: transform 0.14s ease, box-shadow 0.14s ease, background 0.14s ease;
     }
 
     .tag-btn {
-      border: 1px solid #f1d5bf;
-      border-radius: 999px;
-      color: #9a4b22;
-      background: #fff6ee;
-      padding: 7px 10px;
-      font-size: 0.9rem;
+      border: 1px solid rgba(255, 107, 53, 0.22);
+      color: #8D3F1B;
+      background: var(--soft-orange);
+      padding: 8px 11px;
+      font-size: 0.92rem;
     }
 
-    .error {
-      display: none;
-      margin-top: 12px;
-      border-radius: 12px;
-      color: #8d341d;
-      background: #fff0e7;
-      padding: 11px 12px;
-      font-weight: 700;
+    .primary-btn,
+    .secondary-btn,
+    .ghost-btn {
+      width: 100%;
+      border: 0;
+      padding: 11px 14px;
     }
 
-    .error.show {
-      display: block;
+    .primary-btn {
+      color: #fff;
+      background: var(--primary);
+      box-shadow: 0 10px 20px rgba(255, 107, 53, 0.24);
     }
 
-    .loading {
-      display: none;
-      margin-top: 14px;
-      align-items: center;
-      justify-content: center;
+    .secondary-btn {
+      color: #0F756F;
+      background: var(--soft-blue);
+      border: 1px solid rgba(78, 205, 196, 0.36);
+    }
+
+    .ghost-btn {
+      color: var(--primary-dark);
+      background: #FFF5EE;
+      border: 1px solid rgba(255, 107, 53, 0.24);
+    }
+
+    .tag-btn:active,
+    .primary-btn:active,
+    .secondary-btn:active,
+    .ghost-btn:active {
+      transform: scale(0.98);
+    }
+
+    .button-row {
+      display: grid;
       gap: 10px;
+      margin-top: 16px;
+    }
+
+    .result-head {
+      display: grid;
+      gap: 11px;
+      margin-bottom: 16px;
+    }
+
+    .greeting {
+      margin-bottom: 0;
+      font-size: 1.2rem;
+      font-weight: 950;
+      line-height: 1.35;
+    }
+
+    .child-response {
+      margin: 0;
+      border-left: 5px solid var(--primary);
+      border-radius: var(--radius);
+      background: #fff;
+      padding: 13px 14px;
+      box-shadow: 0 7px 18px rgba(120, 78, 45, 0.08);
+      white-space: pre-wrap;
+    }
+
+    .note-grid {
+      display: grid;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    .note-block {
+      padding: 13px;
+      box-shadow: 0 7px 18px rgba(120, 78, 45, 0.08);
+    }
+
+    .note-block h3 {
+      margin-bottom: 5px;
+      font-size: 1rem;
+      line-height: 1.3;
+    }
+
+    .note-block p {
+      margin-bottom: 0;
+      color: #4B4038;
+      white-space: pre-wrap;
+    }
+
+    .section {
+      margin-top: 18px;
+    }
+
+    .section-title {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      margin-bottom: 10px;
+      font-size: 1.06rem;
+      line-height: 1.3;
+    }
+
+    .dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: var(--primary);
+    }
+
+    .dot.blue {
+      background: var(--blue);
+    }
+
+    .dot.pink {
+      background: var(--pink);
+    }
+
+    .book-list {
+      display: grid;
+      gap: 11px;
+    }
+
+    .book-card {
+      padding: 14px;
+      box-shadow: 0 8px 20px rgba(120, 78, 45, 0.09);
+    }
+
+    .book-card.interest {
+      border-left: 6px solid var(--primary);
+      background: linear-gradient(90deg, var(--soft-orange), #fff 48%);
+    }
+
+    .book-card.bridge {
+      border-left: 6px solid var(--blue);
+      background: linear-gradient(90deg, var(--soft-blue), #fff 48%);
+    }
+
+    .book-card.classic {
+      border-left: 6px solid var(--pink);
+      background: linear-gradient(90deg, var(--soft-pink), #fff 48%);
+    }
+
+    .type-pill {
+      display: inline-flex;
+      align-items: center;
+      min-height: 28px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.82);
+      color: #6D5547;
+      padding: 4px 9px;
+      font-size: 0.82rem;
+      font-weight: 900;
+    }
+
+    .book-title {
+      margin: 9px 0 3px;
+      font-size: 1.08rem;
+      line-height: 1.35;
+      font-weight: 950;
+    }
+
+    .book-author {
+      margin-bottom: 8px;
       color: var(--muted);
+      font-size: 0.94rem;
       font-weight: 700;
     }
 
-    .loading.show {
+    .reason {
+      margin-bottom: 10px;
+      color: #4C423A;
+      white-space: pre-wrap;
+    }
+
+    .location {
+      margin-bottom: 12px;
+      border: 1px dashed rgba(78, 205, 196, 0.55);
+      border-radius: var(--radius);
+      background: rgba(233, 250, 248, 0.82);
+      color: #0F756F;
+      padding: 9px 10px;
+      font-weight: 850;
+    }
+
+    .empty-note {
+      margin: 0;
+      border: 1px dashed rgba(239, 220, 202, 0.95);
+      border-radius: var(--radius);
+      background: rgba(255, 255, 255, 0.75);
+      color: var(--muted);
+      padding: 12px;
+    }
+
+    .selected-book {
+      margin-bottom: 14px;
+      border-left: 5px solid var(--blue);
+    }
+
+    .question-list {
+      display: grid;
+      gap: 13px;
+    }
+
+    .question-card {
+      padding: 14px;
+      box-shadow: 0 8px 18px rgba(120, 78, 45, 0.08);
+    }
+
+    .question-title {
+      margin-bottom: 10px;
+      font-size: 1rem;
+      line-height: 1.45;
+      font-weight: 900;
+    }
+
+    .dimension {
+      display: inline-flex;
+      align-items: center;
+      min-height: 28px;
+      margin-bottom: 8px;
+      border-radius: 999px;
+      background: #FFF7DE;
+      color: #7A5A0E;
+      padding: 4px 9px;
+      font-size: 0.82rem;
+      font-weight: 900;
+    }
+
+    .feedback-card {
+      padding: 16px;
+      box-shadow: 0 8px 20px rgba(120, 78, 45, 0.1);
+    }
+
+    .score-line {
       display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .level {
+      margin-bottom: 0;
+      font-size: 1.25rem;
+      line-height: 1.3;
+      font-weight: 950;
+    }
+
+    .score {
+      flex: 0 0 auto;
+      min-width: 68px;
+      border-radius: var(--radius);
+      color: #fff;
+      background: var(--pink);
+      padding: 8px 10px;
+      text-align: center;
+      font-weight: 950;
+    }
+
+    .stars {
+      margin: 2px 0 10px;
+      color: #E9A900;
+      font-size: 1.35rem;
+      letter-spacing: 0;
+    }
+
+    .progress {
+      height: 12px;
+      margin-bottom: 14px;
+      border-radius: 999px;
+      background: #F5E5D6;
+      overflow: hidden;
+    }
+
+    .progress-bar {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--primary), var(--yellow), var(--blue));
+      border-radius: inherit;
+      transition: width 0.35s ease;
+    }
+
+    .feedback-grid {
+      display: grid;
+      gap: 11px;
+    }
+
+    .feedback-item {
+      border-radius: var(--radius);
+      background: #FFFDFC;
+      border: 1px solid rgba(239, 220, 202, 0.9);
+      padding: 12px;
+    }
+
+    .feedback-item h3 {
+      margin-bottom: 5px;
+      font-size: 1rem;
+    }
+
+    .feedback-item p {
+      margin-bottom: 0;
+      color: #4B4038;
+      white-space: pre-wrap;
+    }
+
+    .toast {
+      display: none;
+      position: fixed;
+      z-index: 40;
+      left: 14px;
+      right: 14px;
+      top: calc(12px + env(safe-area-inset-top));
+      max-width: 532px;
+      margin: 0 auto;
+      border-radius: var(--radius);
+      background: #FFF0E7;
+      border: 1px solid rgba(255, 107, 53, 0.34);
+      color: #843519;
+      padding: 12px 13px;
+      box-shadow: 0 12px 24px rgba(120, 78, 45, 0.14);
+      font-weight: 850;
+    }
+
+    .toast.show {
+      display: block;
+      animation: fadeIn 0.16s ease;
+    }
+
+    .loading-mask {
+      position: fixed;
+      z-index: 50;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      background: rgba(45, 37, 32, 0.28);
+      padding: 20px;
+    }
+
+    .loading-box {
+      width: min(100%, 300px);
+      border-radius: var(--radius);
+      background: #fff;
+      box-shadow: 0 18px 42px rgba(45, 37, 32, 0.22);
+      padding: 20px;
+      text-align: center;
+      font-weight: 900;
     }
 
     .spinner {
-      width: 22px;
-      height: 22px;
-      border: 3px solid #ffe1cd;
+      width: 38px;
+      height: 38px;
+      margin: 0 auto 12px;
+      border: 4px solid #FFE0CE;
       border-top-color: var(--primary);
       border-radius: 50%;
       animation: spin 0.8s linear infinite;
@@ -274,204 +619,28 @@
       }
     }
 
-    .hidden {
-      display: none;
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
 
-    .result-head {
-      display: grid;
-      gap: 10px;
-      margin-bottom: 14px;
-    }
-
-    .greeting {
-      margin: 0;
-      font-size: 1.2rem;
-      font-weight: 850;
-    }
-
-    .child-response {
-      margin: 0;
-      color: #4b4038;
-      background: #fff;
-      border-left: 5px solid var(--primary);
-      border-radius: 12px;
-      padding: 13px 14px;
-      box-shadow: var(--shadow);
-    }
-
-    .encouragement {
-      color: #774115;
-      background: #fff0dc;
-      border: 1px dashed rgba(255, 139, 66, 0.52);
-      border-radius: 12px;
-      padding: 12px 13px;
-      font-weight: 800;
-    }
-
-    .section {
-      margin-top: 18px;
-    }
-
-    .section-title {
-      display: flex;
-      align-items: center;
-      gap: 9px;
-      margin: 0 0 10px;
-      font-size: 1.05rem;
-    }
-
-    .dot {
-      width: 11px;
-      height: 11px;
-      border-radius: 999px;
-      background: var(--primary);
-    }
-
-    .dot.blue {
-      background: var(--blue);
-    }
-
-    .dot.green {
-      background: var(--green);
-    }
-
-    .book-list {
-      display: grid;
-      gap: 11px;
-    }
-
-    .book-card {
-      padding: 13px;
-      box-shadow: 0 8px 20px rgba(117, 76, 43, 0.08);
-    }
-
-    .book-card.interest {
-      border-left: 6px solid var(--primary);
-      background: linear-gradient(90deg, var(--soft-orange), #fff 42%);
-    }
-
-    .book-card.bridge {
-      border-left: 6px solid var(--blue);
-      background: linear-gradient(90deg, var(--soft-blue), #fff 42%);
-    }
-
-    .book-card.classic {
-      border-left: 6px solid var(--green);
-      background: linear-gradient(90deg, var(--soft-green), #fff 42%);
-    }
-
-    .book-title {
-      margin: 0;
-      font-size: 1.02rem;
-      font-weight: 850;
-    }
-
-    .book-author {
-      margin: 4px 0 8px;
-      color: var(--muted);
-      font-size: 0.92rem;
-    }
-
-    .reason {
-      margin: 0;
-      color: #4d423b;
-    }
-
-    .result-block {
-      margin-top: 16px;
-      padding: 14px;
-      box-shadow: 0 8px 20px rgba(117, 76, 43, 0.08);
-    }
-
-    .result-block h3 {
-      margin: 0 0 7px;
-      font-size: 1rem;
-    }
-
-    .result-block p {
-      margin: 0;
-      color: #51463f;
-    }
-
-    .adult-summary {
-      margin: 0;
-      color: #51463f;
-      background: #fff;
-      border-left: 5px solid var(--blue);
-      border-radius: 12px;
-      padding: 13px 14px;
-      box-shadow: var(--shadow);
-    }
-
-    .record-list {
-      display: grid;
-      gap: 10px;
-      margin-top: 10px;
-    }
-
-    .record-card {
-      border: 1px solid rgba(240, 223, 207, 0.85);
-      border-radius: 12px;
-      background: #fffdfb;
-      padding: 12px;
-    }
-
-    .record-card h4 {
-      margin: 0 0 7px;
-      font-size: 0.98rem;
-    }
-
-    .record-card p {
-      margin: 5px 0 0;
-    }
-
-    .record-meta {
-      color: var(--muted);
-      font-size: 0.86rem;
-    }
-
-    .pill-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 7px;
-      margin-top: 9px;
-    }
-
-    .pill {
-      border-radius: 999px;
-      color: #66564d;
-      background: #fff0e7;
-      padding: 5px 9px;
-      font-size: 0.82rem;
-      font-weight: 750;
-    }
-
-    .parent {
-      background: #f5fbff;
-      border-color: rgba(74, 144, 217, 0.2);
-    }
-
-    .follow {
-      background: #fff9e8;
-      border-color: rgba(255, 184, 77, 0.28);
-    }
-
-    .empty-note {
-      margin: 0;
-      color: var(--muted);
-      background: rgba(255, 255, 255, 0.78);
-      border-radius: 12px;
-      padding: 12px;
-    }
-
-    @media (min-width: 560px) {
+    @media (min-width: 520px) {
       .app {
-        padding-top: 24px;
+        padding-top: 22px;
       }
 
       .panel {
-        padding: 22px;
+        padding: 20px;
+      }
+
+      .button-row.two {
+        grid-template-columns: 1fr 1fr;
       }
     }
   </style>
@@ -479,23 +648,42 @@
 <body>
   <main class="app">
     <header class="topbar">
-      <div class="logo" aria-hidden="true">书</div>
+      <div class="logo" aria-hidden="true">北</div>
       <div>
-        <h1>北大附小图书馆・智能阅读伙伴</h1>
-        <p class="subtitle">说一句想看的书，我来帮你找</p>
+        <h1>北大附小智能阅读推荐</h1>
+        <p class="subtitle">输入兴趣，找到下一本想读的书 📚</p>
       </div>
     </header>
 
-    <nav class="mode-switch" aria-label="使用端选择">
-      <button id="childModeBtn" class="mode-btn active" type="button" data-mode="child">小朋友端</button>
-      <button id="adultModeBtn" class="mode-btn" type="button" data-mode="adult">家长 / 老师端</button>
-    </nav>
+    <details id="settingsPanel" class="settings">
+      <summary>接口设置</summary>
+      <div class="settings-body">
+        <label>
+          API 地址
+          <input id="apiUrlInput" type="url" placeholder="例如：https://cqccmb7q97.coze.site/run" autocomplete="off">
+        </label>
+        <label>
+          Bearer Token
+          <input id="apiTokenInput" type="password" placeholder="填写 YOUR_TOKEN，可留空" autocomplete="off">
+        </label>
+        <label>
+          馆藏候选内容
+          <textarea id="libraryCandidatesInput" placeholder="可粘贴本地知识库或虚拟馆藏位置，提交时会传给 API"></textarea>
+        </label>
+      </div>
+    </details>
 
-    <section id="inputView" class="panel" aria-labelledby="formTitle">
-      <h2 id="formTitle" class="greeting">今天想读什么呀？</h2>
+    <div class="stepper" aria-label="阅读流程">
+      <div id="stepOne" class="step active">1 找书</div>
+      <div id="stepTwo" class="step">2 小问答</div>
+      <div id="stepThree" class="step">3 反馈</div>
+    </div>
+
+    <section id="interestView" class="view panel" aria-labelledby="interestTitle">
+      <h2 id="interestTitle" class="greeting">今天想读什么书呢？✨</h2>
       <p class="hello">可以写“我喜欢恐龙”“想看搞笑漫画”“不想看太厚的书”。</p>
 
-      <form id="bookForm" class="form-grid">
+      <form id="interestForm" class="form-grid">
         <label>
           姓名
           <input id="nameInput" type="text" autocomplete="name" placeholder="例如：小明" required>
@@ -515,14 +703,13 @@
         </label>
 
         <label>
-          你想看什么书
-          <textarea id="queryInput" placeholder="例如：我喜欢恐龙，想看有趣一点的书" required></textarea>
-          <span class="hint">也可以说不想看什么，比如“不想看太厚的书”。</span>
+          我喜欢什么书 / 想读什么
+          <textarea id="queryInput" placeholder="例如：我喜欢恐龙，也想读有趣一点的书" required></textarea>
         </label>
 
         <label>
-          借阅记录
-          <textarea id="historyInput" placeholder="可以不填写。例如：我看过阿衰 online 和米小圈上学记"></textarea>
+          阅读历史
+          <textarea id="historyInput" placeholder="选填，例如：我读过《米小圈上学记》和《神奇校车》"></textarea>
         </label>
 
         <div class="quick-tags" aria-label="快速填写">
@@ -532,675 +719,955 @@
           <button class="tag-btn" type="button" data-tag="我不想看太厚的书">薄一点</button>
         </div>
 
-        <button class="primary-btn" type="submit">帮我找书</button>
+        <button class="primary-btn" type="submit">帮我找书 ✨</button>
       </form>
-
-      <div id="loading" class="loading" role="status" aria-live="polite">
-        <span class="spinner" aria-hidden="true"></span>
-        <span>正在翻书架，马上回来...</span>
-      </div>
-      <div id="errorBox" class="error" role="alert"></div>
     </section>
 
-    <section id="adultInputView" class="panel hidden" aria-labelledby="adultFormTitle">
-      <h2 id="adultFormTitle" class="greeting">查看孩子的阅读记录</h2>
-      <p class="hello">输入孩子的虚拟姓名和年级，查看本机测试记录。</p>
-
-      <form id="adultForm" class="form-grid">
-        <label>
-          孩子姓名
-          <input id="adultNameInput" type="text" autocomplete="off" placeholder="例如：小明" required>
-        </label>
-
-        <label>
-          年级
-          <select id="adultGradeInput" required>
-            <option value="">请选择年级</option>
-            <option value="一年级">一年级</option>
-            <option value="二年级">二年级</option>
-            <option value="三年级">三年级</option>
-            <option value="四年级">四年级</option>
-            <option value="五年级">五年级</option>
-            <option value="六年级">六年级</option>
-          </select>
-        </label>
-
-        <button class="primary-btn" type="submit">查看阅读记录</button>
-      </form>
-
-      <div id="adultErrorBox" class="error" role="alert"></div>
-    </section>
-
-    <section id="resultView" class="hidden" aria-live="polite">
+    <section id="recommendView" class="view hidden" aria-live="polite">
       <div class="result-head">
-        <p id="greetingText" class="greeting"></p>
+        <p id="recommendGreeting" class="greeting"></p>
         <p id="childResponse" class="child-response"></p>
-        <div id="encouragementText" class="encouragement"></div>
       </div>
+
+      <div id="noteGrid" class="note-grid"></div>
 
       <div class="section">
         <h2 class="section-title"><span class="dot"></span>兴趣入口书</h2>
-        <div id="interestList" class="book-list"></div>
+        <div id="interestBooks" class="book-list"></div>
       </div>
 
       <div class="section">
         <h2 class="section-title"><span class="dot blue"></span>桥梁书</h2>
-        <div id="bridgeList" class="book-list"></div>
+        <div id="bridgeBooks" class="book-list"></div>
       </div>
 
       <div class="section">
-        <h2 class="section-title"><span class="dot green"></span>经典 / 拓展书</h2>
-        <div id="classicList" class="book-list"></div>
+        <h2 class="section-title"><span class="dot pink"></span>经典 / 拓展书</h2>
+        <div id="classicBooks" class="book-list"></div>
       </div>
 
-      <button id="resetBtn" class="secondary-btn" type="button">再找一次</button>
+      <div class="button-row two">
+        <button id="backToInterestBtn" class="ghost-btn" type="button">返回修改兴趣</button>
+        <button id="freshStartBtn" class="secondary-btn" type="button">重新开始 🎉</button>
+      </div>
     </section>
 
-    <section id="adultResultView" class="hidden" aria-live="polite">
-      <div class="result-head">
-        <p id="adultGreetingText" class="greeting"></p>
-        <p id="adultSummary" class="adult-summary"></p>
+    <section id="questionView" class="view hidden" aria-live="polite">
+      <div class="panel selected-book">
+        <p id="questionGreeting" class="greeting"></p>
+        <p id="questionBookInfo" class="hello"></p>
       </div>
 
-      <div class="result-block">
-        <h3>孩子的阅读记录</h3>
-        <div id="recordList" class="record-list"></div>
+      <form id="answerForm" class="form-grid">
+        <div id="questionList" class="question-list"></div>
+        <button class="primary-btn" type="submit">我回答完了！🎯</button>
+      </form>
+
+      <div class="button-row">
+        <button id="backToRecommendBtn" class="ghost-btn" type="button">返回书单</button>
+      </div>
+    </section>
+
+    <section id="feedbackView" class="view hidden" aria-live="polite">
+      <div class="feedback-card">
+        <div class="score-line">
+          <h2 id="feedbackLevel" class="level"></h2>
+          <div id="feedbackScore" class="score"></div>
+        </div>
+        <div id="feedbackStars" class="stars" aria-hidden="true"></div>
+        <div class="progress" aria-hidden="true">
+          <div id="scoreBar" class="progress-bar"></div>
+        </div>
+        <div id="feedbackGrid" class="feedback-grid"></div>
       </div>
 
-      <div class="result-block">
-        <h3>推荐阅读路径</h3>
-        <p id="adultReadingPath"></p>
+      <div class="button-row two">
+        <button id="backToQuestionsBtn" class="ghost-btn" type="button">返回小问答</button>
+        <button id="chooseAnotherBtn" class="secondary-btn" type="button">回到书单 📚</button>
       </div>
-
-      <div class="result-block parent">
-        <h3>给家长的建议</h3>
-        <p id="adultParentMessage"></p>
+      <div class="button-row">
+        <button id="finishResetBtn" class="primary-btn" type="button">重新找一本 ✨</button>
       </div>
-
-      <div class="result-block follow">
-        <h3>可以继续问问孩子</h3>
-        <p id="adultFollowQuestion"></p>
-      </div>
-
-      <button id="adultResetBtn" class="secondary-btn" type="button">重新查询</button>
     </section>
   </main>
 
+  <div id="toast" class="toast" role="alert"></div>
+  <div id="loadingMask" class="loading-mask hidden" role="status" aria-live="polite">
+    <div class="loading-box">
+      <div class="spinner" aria-hidden="true"></div>
+      <div id="loadingText">正在请求接口...</div>
+    </div>
+  </div>
+
   <script>
-    const books = [
-      {
-        title: "米小圈上学记",
-        author: "北猫",
-        grades: ["一年级", "二年级", "三年级"],
-        tags: ["搞笑", "校园", "朋友", "轻松", "漫画", "故事"],
-        value_type: "兴趣入口书",
-        reason: "校园故事很亲切，笑点多，适合从轻松阅读开始。"
-      },
-      {
-        title: "阿衰 online",
-        author: "猫小乐",
-        grades: ["一年级", "二年级", "三年级", "四年级"],
-        tags: ["漫画", "搞笑", "轻松", "校园"],
-        value_type: "兴趣入口书",
-        reason: "漫画节奏快，容易读进去，可以帮助孩子先建立翻书的快乐。"
-      },
-      {
-        title: "父与子全集",
-        author: "埃·奥·卜劳恩",
-        grades: ["一年级", "二年级", "三年级", "四年级"],
-        tags: ["漫画", "幽默", "亲情", "图画", "轻松"],
-        value_type: "兴趣入口书",
-        reason: "几乎不用很多文字也能读懂，幽默里有温暖的亲情。"
-      },
-      {
-        title: "恐龙大陆",
-        author: "黑川光广",
-        grades: ["一年级", "二年级", "三年级"],
-        tags: ["恐龙", "动物", "冒险", "图画", "故事"],
-        value_type: "兴趣入口书",
-        reason: "恐龙主题很抓人，故事短而有画面感，适合兴趣驱动阅读。"
-      },
-      {
-        title: "神奇校车",
-        author: "乔安娜·柯尔",
-        grades: ["二年级", "三年级", "四年级", "五年级"],
-        tags: ["科学", "科普", "冒险", "身体", "自然", "恐龙", "宇宙"],
-        value_type: "桥梁书",
-        reason: "把科学知识放进冒险故事里，读起来像一起坐上会变形的校车。"
-      },
-      {
-        title: "不一样的卡梅拉",
-        author: "克利斯提昂·约里波瓦",
-        grades: ["一年级", "二年级", "三年级"],
-        tags: ["冒险", "成长", "幽默", "动物", "图画"],
-        value_type: "桥梁书",
-        reason: "故事活泼，文字量适中，能从图画书自然过渡到章节阅读。"
-      },
-      {
-        title: "晴天有时下猪",
-        author: "矢玉四郎",
-        grades: ["二年级", "三年级", "四年级"],
-        tags: ["搞笑", "想象", "日记", "校园", "轻松"],
-        value_type: "桥梁书",
-        reason: "想象力很跳跃，适合喜欢搞笑又愿意挑战多一点文字的孩子。"
-      },
-      {
-        title: "查理九世",
-        author: "雷欧幻像",
-        grades: ["三年级", "四年级", "五年级", "六年级"],
-        tags: ["侦探", "冒险", "推理", "悬疑", "朋友"],
-        value_type: "桥梁书",
-        reason: "情节推进快，有谜题和伙伴合作，适合喜欢探索秘密的孩子。"
-      },
-      {
-        title: "我的野生动物朋友",
-        author: "蒂皮·德格雷",
-        grades: ["三年级", "四年级", "五年级", "六年级"],
-        tags: ["动物", "自然", "摄影", "真实", "科普"],
-        value_type: "桥梁书",
-        reason: "真实照片和自然故事很有吸引力，能把动物兴趣延伸到观察世界。"
-      },
-      {
-        title: "窗边的小豆豆",
-        author: "黑柳彻子",
-        grades: ["三年级", "四年级", "五年级", "六年级"],
-        tags: ["校园", "成长", "温暖", "经典", "老师"],
-        value_type: "经典 / 拓展书",
-        reason: "故事温柔又有力量，能让孩子感受到被理解和被鼓励。"
-      },
-      {
-        title: "夏洛的网",
-        author: "E·B·怀特",
-        grades: ["三年级", "四年级", "五年级", "六年级"],
-        tags: ["经典", "动物", "友情", "成长", "温暖"],
-        value_type: "经典 / 拓展书",
-        reason: "关于友情、承诺和生命的经典故事，适合慢慢读、慢慢想。"
-      },
-      {
-        title: "小王子",
-        author: "安托万·德·圣-埃克苏佩里",
-        grades: ["四年级", "五年级", "六年级"],
-        tags: ["经典", "想象", "哲理", "星球", "成长"],
-        value_type: "经典 / 拓展书",
-        reason: "文字不长，但很有回味，适合开始接触更深一点的文学作品。"
-      },
-      {
-        title: "森林报",
-        author: "维·比安基",
-        grades: ["三年级", "四年级", "五年级", "六年级"],
-        tags: ["自然", "科普", "动物", "植物", "经典"],
-        value_type: "经典 / 拓展书",
-        reason: "像读自然界的新闻一样了解四季，适合喜欢动植物和观察的孩子。"
-      },
-      {
-        title: "中国神话故事",
-        author: "袁珂 编著",
-        grades: ["三年级", "四年级", "五年级", "六年级"],
-        tags: ["神话", "传统", "经典", "想象", "中国"],
-        value_type: "经典 / 拓展书",
-        reason: "能认识很多中国传统故事，也能打开更大的想象世界。"
-      },
-      {
-        title: "西游记 少儿版",
-        author: "吴承恩 原著",
-        grades: ["三年级", "四年级", "五年级", "六年级"],
-        tags: ["经典", "冒险", "神话", "孙悟空", "中国"],
-        value_type: "经典 / 拓展书",
-        reason: "人物鲜明、故事热闹，是进入中国古典名著的好入口。"
-      }
-    ];
+    const SETTINGS_KEY = "pkuReadingH5SettingsV2";
+    const STATE_KEY = "pkuReadingH5StateV2";
+    const REQUEST_TIMEOUT = 60000;
 
-    const interestEncouragements = [
-      "漫画也很好呀，很多小朋友都是从漫画开始爱上阅读的！",
-      "能拿起书就是最棒的第一步！",
-      "先读自己喜欢的书，阅读会变得越来越轻松。",
-      "搞笑和轻松的书也有大本领，它们会把你带进阅读世界。",
-      "从喜欢开始读，慢慢就会发现更多好书。",
-      "会说出自己喜欢什么书，已经很会选书啦！",
-      "轻阅读也很珍贵，它能让阅读变成每天的小快乐。"
-    ];
+    const DEFAULT_LIBRARY_CANDIDATES = [
+      "《米小圈上学记》|北猫|文学/校园|一层儿童文学 A-03",
+      "《父与子全集》|埃·奥·卜劳恩|漫画/幽默|一层绘本漫画 B-08",
+      "《恐龙大陆》|黑川光广|绘本/恐龙|二层自然科普 C-02",
+      "《神奇校车》|乔安娜·柯尔|科普/冒险|二层自然科普 C-10",
+      "《晴天有时下猪》|矢玉四郎|文学/想象|一层桥梁阅读 D-06",
+      "《查理九世》|雷欧幻像|侦探/冒险|一层桥梁阅读 D-12",
+      "《窗边的小豆豆》|黑柳彻子|文学/成长|二层经典阅读 E-04",
+      "《小王子》|圣埃克苏佩里|经典/哲思|二层经典阅读 E-09",
+      "《森林报》|维·比安基|自然/科普|二层自然科普 C-15",
+      "《中国神话故事》|袁珂 编著|传统文化/神话|二层经典阅读 F-01"
+    ].join("\n");
 
-    const classicEncouragements = [
-      "你选的书真棒，都是经典好书！",
-      "阅读品味越来越好啦！",
-      "愿意挑战经典故事，说明你已经准备好读更有回味的书了。",
-      "这些书很适合慢慢读，你会在故事里发现很多小秘密。",
-      "你已经很会给自己挑有营养的书了！",
-      "读经典就像和很多有趣的人聊天，太棒啦！"
-    ];
-
-    const keywordMap = [
-      ["恐龙", ["恐龙"]],
-      ["漫画", ["漫画"]],
-      ["搞笑", ["搞笑", "幽默", "轻松"]],
-      ["好笑", ["搞笑", "幽默", "轻松"]],
-      ["校园", ["校园", "朋友"]],
-      ["动物", ["动物", "自然"]],
-      ["侦探", ["侦探", "推理", "悬疑"]],
-      ["推理", ["侦探", "推理", "悬疑"]],
-      ["冒险", ["冒险"]],
-      ["科学", ["科学", "科普"]],
-      ["科普", ["科学", "科普", "自然"]],
-      ["自然", ["自然", "动物", "植物"]],
-      ["神话", ["神话", "传统", "中国"]],
-      ["经典", ["经典"]],
-      ["薄", ["轻松", "图画", "漫画"]],
-      ["太厚", ["轻松", "图画", "漫画"]],
-      ["短", ["轻松", "图画", "漫画"]]
-    ];
-
-    const typeConfig = {
-      "兴趣入口书": {
-        id: "interestList",
-        className: "interest",
-        fallbackTags: ["漫画", "搞笑", "轻松", "图画"]
-      },
-      "桥梁书": {
-        id: "bridgeList",
-        className: "bridge",
-        fallbackTags: ["冒险", "校园", "科学", "动物"]
-      },
-      "经典 / 拓展书": {
-        id: "classicList",
-        className: "classic",
-        fallbackTags: ["经典", "成长", "自然", "中国"]
-      }
+    const BASE_PAYLOAD = {
+      user_query: "",
+      grade: "",
+      reading_history: "",
+      library_candidates: "",
+      book_title: "",
+      book_author: "",
+      book_summary: "",
+      book_category: "",
+      questions_and_answers: ""
     };
 
-    const STORAGE_KEY = "libraryPkuReadingLogsV1";
-
-    const form = document.querySelector("#bookForm");
-    const adultForm = document.querySelector("#adultForm");
-    const inputView = document.querySelector("#inputView");
-    const adultInputView = document.querySelector("#adultInputView");
-    const resultView = document.querySelector("#resultView");
-    const adultResultView = document.querySelector("#adultResultView");
-    const loading = document.querySelector("#loading");
-    const errorBox = document.querySelector("#errorBox");
-    const adultErrorBox = document.querySelector("#adultErrorBox");
-    const queryInput = document.querySelector("#queryInput");
-    const resetBtn = document.querySelector("#resetBtn");
-    const adultResetBtn = document.querySelector("#adultResetBtn");
-    const modeButtons = document.querySelectorAll(".mode-btn");
-
-    modeButtons.forEach((button) => {
-      button.addEventListener("click", () => {
-        switchMode(button.dataset.mode);
-      });
-    });
-
-    document.querySelectorAll(".tag-btn").forEach((button) => {
-      button.addEventListener("click", () => {
-        queryInput.value = button.dataset.tag;
-        queryInput.focus();
-      });
-    });
-
-    form.addEventListener("submit", (event) => {
-      event.preventDefault();
-      hideError();
-
-      const name = document.querySelector("#nameInput").value.trim();
-      const grade = document.querySelector("#gradeInput").value;
-      const query = queryInput.value.trim();
-      const history = document.querySelector("#historyInput").value.trim();
-
-      if (!name || !grade || !query) {
-        showError("请先写好姓名、年级和想看的书，我才能帮你找哦。");
-        return;
+    const GROUPS = [
+      {
+        key: "interest_books",
+        targetId: "interestBooks",
+        className: "interest",
+        label: "兴趣入口书"
+      },
+      {
+        key: "bridge_books",
+        targetId: "bridgeBooks",
+        className: "bridge",
+        label: "桥梁书"
+      },
+      {
+        key: "classic_books",
+        targetId: "classicBooks",
+        className: "classic",
+        label: "经典 / 拓展书"
       }
+    ];
 
-      loading.classList.add("show");
+    const views = {
+      interest: document.querySelector("#interestView"),
+      recommendations: document.querySelector("#recommendView"),
+      questions: document.querySelector("#questionView"),
+      evaluation: document.querySelector("#feedbackView")
+    };
 
-      window.setTimeout(() => {
-        const result = buildRecommendation({ name, grade, query, history });
-        saveReadingLog({
-          name,
-          grade,
-          query,
-          history,
-          result
+    const fields = {
+      apiUrl: document.querySelector("#apiUrlInput"),
+      apiToken: document.querySelector("#apiTokenInput"),
+      libraryCandidates: document.querySelector("#libraryCandidatesInput"),
+      name: document.querySelector("#nameInput"),
+      grade: document.querySelector("#gradeInput"),
+      query: document.querySelector("#queryInput"),
+      history: document.querySelector("#historyInput")
+    };
+
+    let appState = createEmptyState();
+    let toastTimer = null;
+
+    initialize();
+
+    function initialize() {
+      loadSettings();
+      loadState();
+      bindEvents();
+      renderFromState();
+      document.querySelector("#settingsPanel").open = !fields.apiUrl.value.trim();
+    }
+
+    function bindEvents() {
+      document.querySelector("#interestForm").addEventListener("submit", handleInterestSubmit);
+      document.querySelector("#answerForm").addEventListener("submit", handleAnswerSubmit);
+      document.querySelector("#backToInterestBtn").addEventListener("click", () => goToStage("interest"));
+      document.querySelector("#backToRecommendBtn").addEventListener("click", () => goToStage("recommendations"));
+      document.querySelector("#backToQuestionsBtn").addEventListener("click", () => goToStage("questions"));
+      document.querySelector("#chooseAnotherBtn").addEventListener("click", () => goToStage("recommendations"));
+      document.querySelector("#freshStartBtn").addEventListener("click", resetAll);
+      document.querySelector("#finishResetBtn").addEventListener("click", resetAll);
+
+      document.querySelectorAll(".tag-btn").forEach((button) => {
+        button.addEventListener("click", () => {
+          fields.query.value = button.dataset.tag || "";
+          saveDraftProfile();
+          fields.query.focus();
         });
-        renderResult(result);
-        loading.classList.remove("show");
-        inputView.classList.add("hidden");
-        resultView.classList.remove("hidden");
-        window.scrollTo({ top: 0, behavior: "smooth" });
-      }, 520);
-    });
+      });
 
-    adultForm.addEventListener("submit", (event) => {
+      Object.values(fields).forEach((field) => {
+        field.addEventListener("input", () => {
+          if (field === fields.apiUrl || field === fields.apiToken || field === fields.libraryCandidates) {
+            saveSettings();
+            return;
+          }
+          saveDraftProfile();
+        });
+      });
+    }
+
+    async function handleInterestSubmit(event) {
       event.preventDefault();
-      hideAdultError();
+      hideToast();
 
-      const name = document.querySelector("#adultNameInput").value.trim();
-      const grade = document.querySelector("#adultGradeInput").value;
-
-      if (!name || !grade) {
-        showAdultError("请先写好孩子的姓名和年级，再查询阅读记录。");
+      const profile = readProfile();
+      if (!profile.name || !profile.grade || !profile.user_query) {
+        showToast("请先写好姓名、年级和想读什么书，我才能帮你找哦。");
         return;
       }
 
-      const logs = findReadingLogs(name, grade);
-      if (!logs.length) {
-        showAdultError("还没有找到这个孩子的测试记录。可以先让孩子在小朋友端找一次书。");
+      appState = {
+        ...createEmptyState(),
+        stage: "interest",
+        profile
+      };
+      persistState();
+
+      try {
+        const response = await postToApi({
+          user_query: profile.user_query,
+          grade: profile.grade,
+          reading_history: profile.reading_history
+        }, "正在为你翻书架...");
+        const recommendation = normalizeRecommendation(parseRecommendationResponse(response));
+
+        appState.stage = "recommendations";
+        appState.recommendation = recommendation;
+        appState.questions = [];
+        appState.answers = [];
+        appState.evaluation = null;
+        appState.selectedBook = null;
+        persistState();
+        renderFromState();
+      } catch (error) {
+        showToast(getFriendlyError(error));
+      }
+    }
+
+    async function handleReadFinished(book, group) {
+      hideToast();
+      appState.selectedBook = normalizeSelectedBook(book, group);
+      appState.stage = "recommendations";
+      appState.questions = [];
+      appState.answers = [];
+      appState.evaluation = null;
+      persistState();
+
+      try {
+        const response = await postToApi({
+          book_title: appState.selectedBook.title,
+          book_author: appState.selectedBook.author,
+          book_summary: appState.selectedBook.summary,
+          book_category: appState.selectedBook.category,
+          grade: appState.profile.grade
+        }, "正在准备阅读小问题...");
+        const questions = normalizeQuestions(parseReadingCheckResponse(response));
+
+        appState.stage = "questions";
+        appState.questions = questions;
+        appState.answers = questions.map(() => "");
+        persistState();
+        renderFromState();
+      } catch (error) {
+        showToast(getFriendlyError(error));
+      }
+    }
+
+    async function handleAnswerSubmit(event) {
+      event.preventDefault();
+      hideToast();
+      collectAnswersFromForm();
+
+      const questionsAndAnswers = appState.questions.map((question, index) => ({
+        question: question.question,
+        child_answer: appState.answers[index] || ""
+      }));
+
+      const hasEmptyAnswer = questionsAndAnswers.some((item) => !item.child_answer.trim());
+      if (hasEmptyAnswer) {
+        showToast("每个小问题都写一点答案，再交给我看吧。");
         return;
       }
 
-      renderAdultResult({ name, grade, logs });
-      adultInputView.classList.add("hidden");
-      adultResultView.classList.remove("hidden");
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    });
+      try {
+        const response = await postToApi({
+          book_title: appState.selectedBook.title,
+          book_author: appState.selectedBook.author,
+          book_summary: appState.selectedBook.summary,
+          book_category: appState.selectedBook.category,
+          grade: appState.profile.grade,
+          questions_and_answers: JSON.stringify(questionsAndAnswers)
+        }, "正在认真看看你的回答...");
+        const evaluation = normalizeEvaluation(parseReadingCheckResponse(response));
 
-    resetBtn.addEventListener("click", () => {
-      resultView.classList.add("hidden");
-      inputView.classList.remove("hidden");
-      loading.classList.remove("show");
-      hideError();
-      form.reset();
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    });
-
-    adultResetBtn.addEventListener("click", () => {
-      adultResultView.classList.add("hidden");
-      adultInputView.classList.remove("hidden");
-      hideAdultError();
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    });
-
-    function switchMode(mode) {
-      const isAdult = mode === "adult";
-
-      modeButtons.forEach((button) => {
-        button.classList.toggle("active", button.dataset.mode === mode);
-      });
-
-      inputView.classList.toggle("hidden", isAdult);
-      adultInputView.classList.toggle("hidden", !isAdult);
-      resultView.classList.add("hidden");
-      adultResultView.classList.add("hidden");
-      loading.classList.remove("show");
-      hideError();
-      hideAdultError();
-      window.scrollTo({ top: 0, behavior: "smooth" });
+        appState.stage = "evaluation";
+        appState.evaluation = evaluation;
+        persistState();
+        renderFromState();
+      } catch (error) {
+        showToast(getFriendlyError(error));
+      }
     }
 
-    function buildRecommendation(profile) {
-      const matchedTags = getMatchedTags(profile.query + " " + profile.history);
-      const selected = {
-        "兴趣入口书": selectBooks("兴趣入口书", profile.grade, matchedTags, profile.history),
-        "桥梁书": selectBooks("桥梁书", profile.grade, matchedTags, profile.history),
-        "经典 / 拓展书": selectBooks("经典 / 拓展书", profile.grade, matchedTags, profile.history)
+    async function postToApi(overrides, loadingText) {
+      const settings = readSettings();
+      if (!settings.apiUrl) {
+        throw new Error("请先填写 API 地址。");
+      }
+
+      const headers = {
+        "Content-Type": "application/json"
+      };
+      if (isLocalCollectorUrl(settings.apiUrl)) {
+        headers["X-Reading-Meta"] = encodeURIComponent(JSON.stringify(buildClientMeta(body)));
+      }
+      if (settings.apiToken) {
+        headers.Authorization = settings.apiToken.toLowerCase().startsWith("bearer ")
+          ? settings.apiToken
+          : `Bearer ${settings.apiToken}`;
+      }
+
+      const body = {
+        ...BASE_PAYLOAD,
+        library_candidates: settings.libraryCandidates,
+        ...overrides
       };
 
-      const hasInterest = selected["兴趣入口书"].length > 0;
-      const topic = getTopic(profile.query, matchedTags);
+      const controller = new AbortController();
+      const timer = window.setTimeout(() => controller.abort(), REQUEST_TIMEOUT);
+      showLoading(loadingText);
 
-      return {
-        name: profile.name,
-        grade: profile.grade,
-        child_response: `我听出来啦，你想找${topic}。我给你排了一个小小阅读路线：先从容易喜欢上的书开始，再慢慢走到更有挑战的好故事。`,
-        encouragement: randomFrom(hasInterest ? interestEncouragements : classicEncouragements),
-        selected,
-        reading_path: buildReadingPath(selected, topic),
-        parent_message: buildParentMessage(hasInterest, profile.grade),
-        follow_up_question: buildFollowUpQuestion(matchedTags, topic)
-      };
-    }
+      try {
+        const response = await fetch(settings.apiUrl, {
+          method: "POST",
+          headers,
+          body: JSON.stringify(body),
+          signal: controller.signal
+        });
+        const text = await response.text();
 
-    function getMatchedTags(text) {
-      const normalized = text.toLowerCase();
-      const tags = new Set();
-
-      keywordMap.forEach(([keyword, mappedTags]) => {
-        if (normalized.includes(keyword.toLowerCase())) {
-          mappedTags.forEach((tag) => tags.add(tag));
+        if (!response.ok) {
+          throw new Error(`接口返回 ${response.status}：${summarizeText(text || response.statusText)}`);
         }
-      });
 
-      if (tags.size === 0) {
-        ["轻松", "成长", "冒险"].forEach((tag) => tags.add(tag));
+        if (!text.trim()) {
+          return {};
+        }
+
+        try {
+          return JSON.parse(text);
+        } catch (error) {
+          return text;
+        }
+      } finally {
+        window.clearTimeout(timer);
+        hideLoading();
       }
-
-      return Array.from(tags);
     }
 
-    function selectBooks(type, grade, matchedTags, history) {
-      const historyText = history.toLowerCase();
-      const config = typeConfig[type];
-      const preferredTags = matchedTags.length ? matchedTags : config.fallbackTags;
-
-      const ranked = books
-        .filter((book) => book.value_type === type && book.grades.includes(grade))
-        .map((book) => {
-          const tagScore = book.tags.reduce((score, tag) => score + (preferredTags.includes(tag) ? 3 : 0), 0);
-          const historyPenalty = historyText && historyText.includes(book.title.toLowerCase()) ? -6 : 0;
-          const fallbackScore = config.fallbackTags.some((tag) => book.tags.includes(tag)) ? 1 : 0;
-          return {
-            ...book,
-            score: tagScore + historyPenalty + fallbackScore
-          };
-        })
-        .sort((a, b) => b.score - a.score || a.title.localeCompare(b.title, "zh-CN"));
-
-      const chosen = ranked.filter((book) => book.score > -3).slice(0, 2);
-      if (chosen.length > 0) {
-        return chosen;
+    function isLocalCollectorUrl(apiUrl) {
+      if (apiUrl === "/api/run") {
+        return true;
       }
-
-      return books
-        .filter((book) => book.value_type === type)
-        .slice(0, 1);
-    }
-
-    function getTopic(query, tags) {
-      if (query.length <= 14) {
-        return `“${query}”这样的书`;
-      }
-
-      const topicWords = tags.slice(0, 2).join("、");
-      return topicWords ? `${topicWords}类的书` : "适合你的书";
-    }
-
-    function buildReadingPath(selected, topic) {
-      const first = selected["兴趣入口书"][0]?.title || selected["桥梁书"][0]?.title || "一本轻松的书";
-      const second = selected["桥梁书"][0]?.title || "一本桥梁书";
-      const third = selected["经典 / 拓展书"][0]?.title || "一本经典书";
-      return `可以先读《${first}》找感觉，再试试《${second}》把阅读时间拉长一点，最后挑战《${third}》。这条路从${topic}出发，不着急，读开心最重要。`;
-    }
-
-    function buildParentMessage(hasInterest, grade) {
-      if (hasInterest) {
-        return `${grade}孩子的阅读兴趣很需要被看见。可以先允许孩子从漫画、轻松故事或熟悉主题进入，再用同主题的桥梁书慢慢增加文字量。`;
-      }
-
-      return `${grade}孩子已经愿意接触经典和拓展阅读，可以多聊人物、情节和感受，不急着考内容，让好书继续保持亲近感。`;
-    }
-
-    function buildFollowUpQuestion(tags, topic) {
-      if (tags.includes("恐龙") || tags.includes("动物")) {
-        return "你最想认识哪一种动物或恐龙？";
-      }
-
-      if (tags.includes("侦探") || tags.includes("推理")) {
-        return "你喜欢自己猜谜底，还是喜欢跟着主角一起破案？";
-      }
-
-      if (tags.includes("科学") || tags.includes("科普")) {
-        return "你最想知道世界上的哪个小秘密？";
-      }
-
-      if (tags.includes("漫画") || tags.includes("搞笑")) {
-        return "你喜欢让人哈哈大笑的故事，还是轻松又温暖的故事？";
-      }
-
-      return `如果再选一本${topic}，你希望它更好笑、更刺激，还是更温暖？`;
-    }
-
-    function renderResult(result) {
-      document.querySelector("#greetingText").textContent = `${result.name} 同学，${result.grade}你好呀！`;
-      document.querySelector("#childResponse").textContent = result.child_response;
-      document.querySelector("#encouragementText").textContent = result.encouragement;
-
-      renderBookList("兴趣入口书", result.selected["兴趣入口书"]);
-      renderBookList("桥梁书", result.selected["桥梁书"]);
-      renderBookList("经典 / 拓展书", result.selected["经典 / 拓展书"]);
-    }
-
-    function renderAdultResult({ name, grade, logs }) {
-      const latest = logs[0];
-      const latestResult = latest.result;
-
-      document.querySelector("#adultGreetingText").textContent = `${name} 同学，${grade}阅读观察`;
-      document.querySelector("#adultSummary").textContent = `共找到 ${logs.length} 条测试记录。最近一次想看的是：“${latest.query}”。`;
-      document.querySelector("#adultReadingPath").textContent = latestResult.reading_path;
-      document.querySelector("#adultParentMessage").textContent = latestResult.parent_message;
-      document.querySelector("#adultFollowQuestion").textContent = latestResult.follow_up_question;
-      renderRecordList(logs);
-    }
-
-    function renderRecordList(logs) {
-      const target = document.querySelector("#recordList");
-      target.innerHTML = "";
-
-      logs.forEach((log, index) => {
-        const card = document.createElement("article");
-        card.className = "record-card";
-
-        const recommendedTitles = flattenBooks(log.result.selected)
-          .map((book) => `《${book.title}》`)
-          .slice(0, 6);
-
-        card.innerHTML = `
-          <h4>第 ${logs.length - index} 次找书</h4>
-          <p class="record-meta">${formatTime(log.created_at)}</p>
-          <p><strong>孩子想看：</strong>${escapeHtml(log.query)}</p>
-          <p><strong>借阅记录：</strong>${escapeHtml(log.history || "未填写")}</p>
-          <div class="pill-row">
-            ${recommendedTitles.map((title) => `<span class="pill">${escapeHtml(title)}</span>`).join("")}
-          </div>
-        `;
-        target.appendChild(card);
-      });
-    }
-
-    function renderBookList(type, list) {
-      const config = typeConfig[type];
-      const target = document.querySelector(`#${config.id}`);
-      target.innerHTML = "";
-
-      if (!list.length) {
-        target.innerHTML = '<p class="empty-note">这层暂时没有找到特别合适的书，可以先从上一层开始读。</p>';
-        return;
-      }
-
-      list.forEach((book) => {
-        const card = document.createElement("article");
-        card.className = `book-card ${config.className}`;
-        card.innerHTML = `
-          <h3 class="book-title">《${escapeHtml(book.title)}》</h3>
-          <p class="book-author">作者：${escapeHtml(book.author)}</p>
-          <p class="reason">${escapeHtml(book.reason)}</p>
-        `;
-        target.appendChild(card);
-      });
-    }
-
-    function showError(message) {
-      errorBox.textContent = message;
-      errorBox.classList.add("show");
-    }
-
-    function hideError() {
-      errorBox.textContent = "";
-      errorBox.classList.remove("show");
-    }
-
-    function showAdultError(message) {
-      adultErrorBox.textContent = message;
-      adultErrorBox.classList.add("show");
-    }
-
-    function hideAdultError() {
-      adultErrorBox.textContent = "";
-      adultErrorBox.classList.remove("show");
-    }
-
-    function saveReadingLog({ name, grade, query, history, result }) {
-      const logs = getReadingLogs();
-      logs.push({
-        id: `${Date.now()}-${Math.random().toString(16).slice(2)}`,
-        name,
-        grade,
-        query,
-        history,
-        normalized_name: normalizeName(name),
-        created_at: new Date().toISOString(),
-        result
-      });
 
       try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(logs.slice(-120)));
+        const url = new URL(apiUrl, window.location.href);
+        return url.origin === window.location.origin && url.pathname === "/api/run";
       } catch (error) {
-        console.warn("Reading log was not saved.", error);
+        return false;
       }
     }
 
-    function findReadingLogs(name, grade) {
-      const normalizedName = normalizeName(name);
-      return getReadingLogs()
-        .filter((log) => log.normalized_name === normalizedName && log.grade === grade)
-        .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+    function buildClientMeta(body) {
+      const selectedBook = appState.selectedBook || {};
+      return {
+        child_name: appState.profile.name || "",
+        grade: appState.profile.grade || body.grade || "",
+        stage: body.questions_and_answers ? "evaluation" : body.book_title ? "questions" : "recommendation",
+        book_title: body.book_title || selectedBook.title || "",
+        book_author: body.book_author || selectedBook.author || "",
+        page_url: window.location.href,
+        user_agent: navigator.userAgent,
+        saved_at: new Date().toISOString()
+      };
     }
 
-    function getReadingLogs() {
-      try {
-        const raw = localStorage.getItem(STORAGE_KEY);
-        return raw ? JSON.parse(raw) : [];
-      } catch (error) {
-        console.warn("Reading logs could not be loaded.", error);
+    function parseRecommendationResponse(response) {
+      const envelope = parseMaybeJson(response, "推荐结果");
+      const firstPayload = pickFirstValue(envelope, ["result"]);
+      const payload = firstPayload === undefined ? envelope : parseMaybeJson(firstPayload, "推荐结果");
+
+      if (payload && payload.result !== undefined && !payload.recommendations) {
+        return parseMaybeJson(payload.result, "推荐结果");
+      }
+      return payload;
+    }
+
+    function parseReadingCheckResponse(response) {
+      const envelope = parseMaybeJson(response, "阅读检测结果");
+      const firstPayload = pickFirstValue(envelope, ["reading_check_result", "result"]);
+      const payload = firstPayload === undefined ? envelope : parseMaybeJson(firstPayload, "阅读检测结果");
+
+      if (payload && payload.reading_check_result !== undefined) {
+        return parseMaybeJson(payload.reading_check_result, "阅读检测结果");
+      }
+      return payload;
+    }
+
+    function normalizeRecommendation(raw) {
+      const recommendations = raw.recommendations || {};
+      const normalized = {
+        child_response: textOf(raw.child_response),
+        reading_path: textOf(raw.reading_path),
+        parent_message: textOf(raw.parent_message),
+        follow_up_question: textOf(raw.follow_up_question),
+        recommendations: {
+          interest_books: normalizeBooks(recommendations.interest_books),
+          bridge_books: normalizeBooks(recommendations.bridge_books),
+          classic_books: normalizeBooks(recommendations.classic_books)
+        }
+      };
+
+      const totalBooks = GROUPS.reduce((count, group) => count + normalized.recommendations[group.key].length, 0);
+      if (!totalBooks) {
+        throw new Error("接口没有返回推荐书籍。");
+      }
+
+      return normalized;
+    }
+
+    function normalizeBooks(list) {
+      if (!Array.isArray(list)) {
         return [];
       }
+
+      return list.map((book) => ({
+        title: textOf(book.title || book.book_title),
+        author: textOf(book.author || book.book_author),
+        reason: textOf(book.reason_for_child || book.reason || book.recommend_reason || book.summary),
+        location: textOf(book.location || book.library_location || book.position),
+        value_type: textOf(book.value_type || book.book_category || book.category),
+        summary: textOf(book.summary || book.book_summary || book.description || book.introduction || book.reason_for_child || book.reason),
+        category: textOf(book.book_category || book.category || book.value_type)
+      })).filter((book) => book.title);
     }
 
-    function normalizeName(name) {
-      return name.trim().replace(/\s+/g, "").toLowerCase();
+    function normalizeSelectedBook(book, group) {
+      const summary = textOf(book.summary || book.reason);
+      const category = textOf(book.category || book.value_type || group.label);
+      return {
+        ...book,
+        groupKey: group.key,
+        groupLabel: group.label,
+        summary,
+        category
+      };
     }
 
-    function flattenBooks(selected) {
-      return [
-        ...(selected["兴趣入口书"] || []),
-        ...(selected["桥梁书"] || []),
-        ...(selected["经典 / 拓展书"] || [])
-      ];
-    }
+    function normalizeQuestions(raw) {
+      const list = Array.isArray(raw.questions) ? raw.questions : Array.isArray(raw) ? raw : [];
+      const questions = list.slice(0, 3).map((item) => ({
+        question: textOf(item.question),
+        reference_answer: textOf(item.reference_answer),
+        dimension: textOf(item.dimension)
+      })).filter((item) => item.question);
 
-    function formatTime(value) {
-      const date = new Date(value);
-      if (Number.isNaN(date.getTime())) {
-        return "时间未知";
+      if (!questions.length) {
+        throw new Error("接口没有返回阅读检测问题。");
       }
 
-      return date.toLocaleString("zh-CN", {
-        month: "2-digit",
-        day: "2-digit",
-        hour: "2-digit",
-        minute: "2-digit"
+      return questions;
+    }
+
+    function normalizeEvaluation(raw) {
+      const evaluation = {
+        level: textOf(raw.level),
+        score: Number.isFinite(Number(raw.score)) ? Number(raw.score) : null,
+        summary: textOf(raw.summary),
+        detail_feedback: textOf(raw.detail_feedback),
+        encouragement: textOf(raw.encouragement),
+        next_book_suggestion: textOf(raw.next_book_suggestion)
+      };
+
+      if (!evaluation.level && evaluation.score === null && !evaluation.summary && !evaluation.detail_feedback) {
+        throw new Error("接口没有返回阅读评估结果。");
+      }
+
+      return evaluation;
+    }
+
+    function renderFromState() {
+      hydrateProfileForm();
+      validateStage();
+      renderProgress();
+      Object.keys(views).forEach((key) => {
+        views[key].classList.toggle("hidden", appState.stage !== key);
+      });
+
+      if (appState.stage === "recommendations") {
+        renderRecommendations();
+      }
+      if (appState.stage === "questions") {
+        renderQuestions();
+      }
+      if (appState.stage === "evaluation") {
+        renderFeedback();
+      }
+
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function validateStage() {
+      if (appState.stage === "recommendations" && !appState.recommendation) {
+        appState.stage = "interest";
+      }
+      if (appState.stage === "questions" && (!appState.selectedBook || !appState.questions.length)) {
+        appState.stage = appState.recommendation ? "recommendations" : "interest";
+      }
+      if (appState.stage === "evaluation" && !appState.evaluation) {
+        appState.stage = appState.questions.length ? "questions" : "interest";
+      }
+    }
+
+    function renderProgress() {
+      const stepIndex = appState.stage === "questions" ? 2 : appState.stage === "evaluation" ? 3 : 1;
+      [
+        document.querySelector("#stepOne"),
+        document.querySelector("#stepTwo"),
+        document.querySelector("#stepThree")
+      ].forEach((step, index) => {
+        const current = index + 1;
+        step.classList.toggle("active", current === stepIndex);
+        step.classList.toggle("done", current < stepIndex);
       });
     }
 
-    function randomFrom(items) {
-      return items[Math.floor(Math.random() * items.length)];
+    function renderRecommendations() {
+      const profile = appState.profile;
+      const result = appState.recommendation;
+      document.querySelector("#recommendGreeting").textContent = `${profile.name || "小读者"}，这是给你的阅读路线 🌟`;
+      setOptionalText("#childResponse", result.child_response);
+      renderNotes(result);
+
+      GROUPS.forEach((group) => {
+        const target = document.querySelector(`#${group.targetId}`);
+        const list = result.recommendations[group.key] || [];
+        target.innerHTML = "";
+
+        if (!list.length) {
+          const empty = document.createElement("p");
+          empty.className = "empty-note";
+          empty.textContent = "接口暂时没有返回这一层书籍。";
+          target.appendChild(empty);
+          return;
+        }
+
+        list.forEach((book) => {
+          target.appendChild(createBookCard(book, group));
+        });
+      });
     }
 
-    function escapeHtml(value) {
-      return String(value)
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
+    function renderNotes(result) {
+      const noteGrid = document.querySelector("#noteGrid");
+      noteGrid.innerHTML = "";
+
+      [
+        ["阅读路径", result.reading_path],
+        ["给家长的建议", result.parent_message],
+        ["可以继续聊", result.follow_up_question]
+      ].forEach(([title, value]) => {
+        if (!value) {
+          return;
+        }
+
+        const block = document.createElement("article");
+        block.className = "note-block";
+        const heading = document.createElement("h3");
+        heading.textContent = title;
+        const paragraph = document.createElement("p");
+        paragraph.textContent = value;
+        block.append(heading, paragraph);
+        noteGrid.appendChild(block);
+      });
+    }
+
+    function createBookCard(book, group) {
+      const card = document.createElement("article");
+      card.className = `book-card ${group.className}`;
+
+      const type = document.createElement("span");
+      type.className = "type-pill";
+      type.textContent = book.value_type || group.label;
+
+      const title = document.createElement("h3");
+      title.className = "book-title";
+      title.textContent = `《${book.title}》`;
+
+      const author = document.createElement("p");
+      author.className = "book-author";
+      author.textContent = book.author ? `作者：${book.author}` : "作者：接口未返回";
+
+      const reason = document.createElement("p");
+      reason.className = "reason";
+      reason.textContent = book.reason || "接口未返回推荐理由。";
+
+      const location = document.createElement("div");
+      location.className = "location";
+      location.textContent = book.location ? `📍 馆藏位置：${book.location}` : "📍 馆藏位置：接口未返回";
+
+      const readButton = document.createElement("button");
+      readButton.className = "primary-btn";
+      readButton.type = "button";
+      readButton.textContent = "我已读完📖";
+      readButton.addEventListener("click", () => handleReadFinished(book, group));
+
+      card.append(type, title, author, reason, location, readButton);
+      return card;
+    }
+
+    function renderQuestions() {
+      const book = appState.selectedBook;
+      document.querySelector("#questionGreeting").textContent = `读完《${book.title}》啦？🎯`;
+      document.querySelector("#questionBookInfo").textContent = `${book.groupLabel} · ${book.author || "作者未返回"} · ${appState.profile.grade}`;
+
+      const target = document.querySelector("#questionList");
+      target.innerHTML = "";
+
+      appState.questions.forEach((item, index) => {
+        const card = document.createElement("article");
+        card.className = "question-card";
+
+        if (item.dimension) {
+          const dimension = document.createElement("span");
+          dimension.className = "dimension";
+          dimension.textContent = item.dimension;
+          card.appendChild(dimension);
+        }
+
+        const title = document.createElement("p");
+        title.className = "question-title";
+        title.textContent = `${index + 1}. ${item.question}`;
+
+        const label = document.createElement("label");
+        label.textContent = "我的回答";
+
+        const textarea = document.createElement("textarea");
+        textarea.value = appState.answers[index] || "";
+        textarea.placeholder = "把你记得的内容写在这里";
+        textarea.addEventListener("input", () => {
+          appState.answers[index] = textarea.value;
+          persistState();
+        });
+
+        label.appendChild(textarea);
+        card.append(title, label);
+        target.appendChild(card);
+      });
+    }
+
+    function renderFeedback() {
+      const evaluation = appState.evaluation;
+      const score = evaluation.score === null ? null : clamp(evaluation.score, 0, 100);
+      const levelText = evaluation.level || "阅读反馈";
+
+      document.querySelector("#feedbackLevel").textContent = `${levelText} ✨`;
+      document.querySelector("#feedbackScore").textContent = score === null ? "分数 --" : `${score} 分`;
+      document.querySelector("#feedbackStars").textContent = renderStars(score);
+      document.querySelector("#scoreBar").style.width = score === null ? "0%" : `${score}%`;
+
+      const grid = document.querySelector("#feedbackGrid");
+      grid.innerHTML = "";
+
+      [
+        ["整体评价", evaluation.summary],
+        ["详细反馈", evaluation.detail_feedback],
+        ["鼓励语", evaluation.encouragement],
+        ["下一本推荐", evaluation.next_book_suggestion]
+      ].forEach(([title, value]) => {
+        if (!value) {
+          return;
+        }
+        const item = document.createElement("article");
+        item.className = "feedback-item";
+        const heading = document.createElement("h3");
+        heading.textContent = title;
+        const paragraph = document.createElement("p");
+        paragraph.textContent = value;
+        item.append(heading, paragraph);
+        grid.appendChild(item);
+      });
+    }
+
+    function renderStars(score) {
+      if (score === null) {
+        return "☆☆☆☆☆";
+      }
+      const filled = clamp(Math.round(score / 20), 0, 5);
+      return "★".repeat(filled) + "☆".repeat(5 - filled);
+    }
+
+    function goToStage(stage) {
+      if (stage === "interest") {
+        appState.stage = "interest";
+      } else if (stage === "recommendations" && appState.recommendation) {
+        appState.stage = "recommendations";
+      } else if (stage === "questions" && appState.questions.length) {
+        appState.stage = "questions";
+      }
+      persistState();
+      renderFromState();
+    }
+
+    function resetAll() {
+      appState = createEmptyState();
+      persistState();
+      hydrateProfileForm();
+      renderFromState();
+    }
+
+    function readProfile() {
+      return {
+        name: fields.name.value.trim(),
+        grade: fields.grade.value,
+        user_query: fields.query.value.trim(),
+        reading_history: fields.history.value.trim()
+      };
+    }
+
+    function saveDraftProfile() {
+      if (appState.stage !== "interest") {
+        return;
+      }
+      appState.profile = readProfile();
+      persistState();
+    }
+
+    function hydrateProfileForm() {
+      const profile = appState.profile || {};
+      fields.name.value = profile.name || "";
+      fields.grade.value = profile.grade || "";
+      fields.query.value = profile.user_query || "";
+      fields.history.value = profile.reading_history || "";
+    }
+
+    function collectAnswersFromForm() {
+      document.querySelectorAll("#questionList textarea").forEach((textarea, index) => {
+        appState.answers[index] = textarea.value;
+      });
+      persistState();
+    }
+
+    function loadSettings() {
+      const settings = readLocalJson(SETTINGS_KEY, {});
+      fields.apiUrl.value = settings.apiUrl || getDefaultApiUrl();
+      fields.apiToken.value = settings.apiToken || "";
+      fields.libraryCandidates.value = settings.libraryCandidates || DEFAULT_LIBRARY_CANDIDATES;
+    }
+
+    function readSettings() {
+      return {
+        apiUrl: fields.apiUrl.value.trim(),
+        apiToken: fields.apiToken.value.trim(),
+        libraryCandidates: fields.libraryCandidates.value.trim()
+      };
+    }
+
+    function getDefaultApiUrl() {
+      const host = window.location.hostname;
+      const isLocalHost = host === "localhost" || host === "127.0.0.1";
+      const isLanHost = /^(10\.|192\.168\.|172\.(1[6-9]|2\d|3[0-1])\.)/.test(host);
+      return window.location.protocol.startsWith("http") && (isLocalHost || isLanHost) ? "/api/run" : "";
+    }
+
+    function saveSettings() {
+      try {
+        localStorage.setItem(SETTINGS_KEY, JSON.stringify(readSettings()));
+      } catch (error) {
+        console.warn("Settings were not saved.", error);
+      }
+    }
+
+    function loadState() {
+      const saved = readLocalJson(STATE_KEY, null);
+      if (saved && typeof saved === "object") {
+        appState = {
+          ...createEmptyState(),
+          ...saved,
+          profile: {
+            ...createEmptyState().profile,
+            ...(saved.profile || {})
+          },
+          questions: Array.isArray(saved.questions) ? saved.questions : [],
+          answers: Array.isArray(saved.answers) ? saved.answers : []
+        };
+      }
+    }
+
+    function persistState() {
+      try {
+        localStorage.setItem(STATE_KEY, JSON.stringify({
+          ...appState,
+          updated_at: new Date().toISOString()
+        }));
+      } catch (error) {
+        console.warn("Progress was not saved.", error);
+      }
+    }
+
+    function readLocalJson(key, fallback) {
+      try {
+        const raw = localStorage.getItem(key);
+        return raw ? JSON.parse(raw) : fallback;
+      } catch (error) {
+        console.warn(`${key} could not be parsed.`, error);
+        return fallback;
+      }
+    }
+
+    function createEmptyState() {
+      return {
+        stage: "interest",
+        profile: {
+          name: "",
+          grade: "",
+          user_query: "",
+          reading_history: ""
+        },
+        recommendation: null,
+        selectedBook: null,
+        questions: [],
+        answers: [],
+        evaluation: null
+      };
+    }
+
+    function parseMaybeJson(value, label) {
+      if (value === null || value === undefined || value === "") {
+        return {};
+      }
+      if (typeof value === "object") {
+        return value;
+      }
+      if (typeof value !== "string") {
+        return value;
+      }
+
+      let text = value.trim();
+      if (!text) {
+        return {};
+      }
+
+      text = text
+        .replace(/^```json\s*/i, "")
+        .replace(/^```\s*/i, "")
+        .replace(/```$/i, "")
+        .trim();
+
+      try {
+        return JSON.parse(text);
+      } catch (error) {
+        const objectStart = text.indexOf("{");
+        const objectEnd = text.lastIndexOf("}");
+        if (objectStart >= 0 && objectEnd > objectStart) {
+          try {
+            return JSON.parse(text.slice(objectStart, objectEnd + 1));
+          } catch (nestedError) {
+            // Try array extraction next.
+          }
+        }
+
+        const arrayStart = text.indexOf("[");
+        const arrayEnd = text.lastIndexOf("]");
+        if (arrayStart >= 0 && arrayEnd > arrayStart) {
+          try {
+            return JSON.parse(text.slice(arrayStart, arrayEnd + 1));
+          } catch (nestedError) {
+            // Fall through to a friendly error.
+          }
+        }
+
+        throw new Error(`${label || "接口结果"}不是有效 JSON。`);
+      }
+    }
+
+    function pickFirstValue(source, keys) {
+      if (!source || typeof source !== "object") {
+        return undefined;
+      }
+      for (const key of keys) {
+        if (source[key] !== undefined) {
+          return source[key];
+        }
+        if (source.data && source.data[key] !== undefined) {
+          return source.data[key];
+        }
+        if (source.output && source.output[key] !== undefined) {
+          return source.output[key];
+        }
+      }
+      return undefined;
+    }
+
+    function textOf(value) {
+      if (value === null || value === undefined) {
+        return "";
+      }
+      if (typeof value === "string") {
+        return value.trim();
+      }
+      if (typeof value === "number" || typeof value === "boolean") {
+        return String(value);
+      }
+      return "";
+    }
+
+    function setOptionalText(selector, value) {
+      const element = document.querySelector(selector);
+      element.textContent = value || "";
+      element.classList.toggle("hidden", !value);
+    }
+
+    function showLoading(message) {
+      document.querySelector("#loadingText").textContent = message || "正在请求接口...";
+      document.querySelector("#loadingMask").classList.remove("hidden");
+    }
+
+    function hideLoading() {
+      document.querySelector("#loadingMask").classList.add("hidden");
+    }
+
+    function showToast(message) {
+      const toast = document.querySelector("#toast");
+      toast.textContent = message;
+      toast.classList.add("show");
+      window.clearTimeout(toastTimer);
+      toastTimer = window.setTimeout(hideToast, 7200);
+    }
+
+    function hideToast() {
+      const toast = document.querySelector("#toast");
+      toast.classList.remove("show");
+      toast.textContent = "";
+      window.clearTimeout(toastTimer);
+    }
+
+    function getFriendlyError(error) {
+      if (error && error.name === "AbortError") {
+        return "接口等待太久了，可以稍后再试一次。";
+      }
+      return error && error.message ? error.message : "刚刚没有连上接口，请检查地址和 Token 后再试。";
+    }
+
+    function summarizeText(text) {
+      return String(text || "").replace(/\s+/g, " ").slice(0, 120) || "请求失败";
+    }
+
+    function clamp(value, min, max) {
+      return Math.min(max, Math.max(min, value));
     }
   </script>
 </body>

@@ -1,0 +1,5 @@
+data/
+config.local.json
+.env
+*.log
+node_modules/
