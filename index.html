@@ -1430,6 +1430,7 @@
       const ranked = LOCAL_LIBRARY
         .map((book) => ({
           book,
+          relevance: scoreLocalRelevance(book, interestText),
           score: scoreLocalBook(book, interestText, gradeNumber, body.reading_history || "")
         }))
         .sort((a, b) => b.score - a.score || a.book.title.localeCompare(b.book.title, "zh-Hans-CN"));
@@ -1450,7 +1451,9 @@
     }
 
     function pickLocalBooks(ranked, level, limit) {
-      let picked = ranked.filter((item) => item.book.level === level).slice(0, limit);
+      const sameLevel = ranked.filter((item) => item.book.level === level);
+      const relevant = sameLevel.filter((item) => item.relevance > 0);
+      let picked = (relevant.length ? relevant : sameLevel).slice(0, limit);
       if (!picked.length) {
         picked = LOCAL_LIBRARY
           .filter((book) => book.level === level)
@@ -1574,10 +1577,28 @@
         || null;
     }
 
-    function scoreLocalBook(book, interestText, gradeNumber, readingHistory) {
+    function scoreLocalRelevance(book, interestText) {
       const haystack = expandInterestText(`${book.title} ${book.author} ${book.category} ${book.summary} ${book.reason_for_child} ${book.tags.join(" ")}`);
+      let relevance = 0;
+
+      book.tags.forEach((tag) => {
+        if (interestText.includes(tag)) {
+          relevance += 8;
+        }
+      });
+
+      getSearchTerms(interestText).forEach((term) => {
+        if (haystack.includes(term)) {
+          relevance += 5;
+        }
+      });
+
+      return relevance;
+    }
+
+    function scoreLocalBook(book, interestText, gradeNumber, readingHistory) {
       const history = textOf(readingHistory);
-      let score = 0;
+      let score = scoreLocalRelevance(book, interestText);
 
       if (Number.isFinite(gradeNumber)) {
         if (gradeNumber >= book.minGrade && gradeNumber <= book.maxGrade) {
@@ -1588,18 +1609,6 @@
           score -= 4;
         }
       }
-
-      book.tags.forEach((tag) => {
-        if (interestText.includes(tag)) {
-          score += 8;
-        }
-      });
-
-      getSearchTerms(interestText).forEach((term) => {
-        if (haystack.includes(term)) {
-          score += 5;
-        }
-      });
 
       if (history && history.includes(book.title)) {
         score -= 18;
