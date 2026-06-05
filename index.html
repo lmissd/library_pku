@@ -931,6 +931,7 @@
     const REQUEST_TIMEOUT = 15000;
     const WORKFLOW_API_URL = "https://cqccmb7q97.coze.site/run";
     const USE_LOCAL_LIBRARY_FIRST = true;
+    const LIBRARY_JSON_URL = "library.json";
 
     const DEFAULT_LIBRARY_CANDIDATES = [
       "《米小圈上学记》|北猫|文学/校园|一层儿童文学 A-03",
@@ -1170,6 +1171,7 @@
         label: "经典 / 拓展书"
       }
     ];
+    const BROAD_DIRECT_TERMS = ["冒险", "有趣", "好玩", "好看", "故事", "成长", "经典", "桥梁书", "阅读", "儿童阅读推荐", "小学图书馆知识库", "AI阅读助手"];
 
     const shellViews = {
       role: document.querySelector("#roleView"),
@@ -1193,6 +1195,8 @@
     };
 
     let appState = createEmptyState();
+    let activeLibrary = LOCAL_LIBRARY;
+    let libraryLoadPromise = null;
     let toastTimer = null;
 
     initialize();
@@ -1200,6 +1204,7 @@
     function initialize() {
       loadState();
       bindEvents();
+      libraryLoadPromise = loadLibraryFromJson();
       renderFromState();
     }
 
@@ -1366,6 +1371,7 @@
 
       try {
         if (USE_LOCAL_LIBRARY_FIRST) {
+          await ensureLibraryReady();
           await wait(260);
           return buildLocalWorkflowResponse(body);
         }
@@ -1393,6 +1399,7 @@
         }
       } catch (error) {
         console.warn("Workflow is unavailable. Using the local library.", error);
+        await ensureLibraryReady();
         return buildLocalWorkflowResponse(body);
       } finally {
         window.clearTimeout(timer);
@@ -1402,6 +1409,188 @@
 
     function wait(ms) {
       return new Promise((resolve) => window.setTimeout(resolve, ms));
+    }
+
+    async function ensureLibraryReady() {
+      if (!libraryLoadPromise) {
+        libraryLoadPromise = loadLibraryFromJson();
+      }
+      await libraryLoadPromise;
+    }
+
+    async function loadLibraryFromJson() {
+      try {
+        const response = await fetch(`${LIBRARY_JSON_URL}?v=${Date.now()}`);
+        if (!response.ok) {
+          throw new Error(`Library request failed: ${response.status}`);
+        }
+
+        const data = await response.json();
+        const books = normalizeLibrarySource(data);
+        if (books.length) {
+          activeLibrary = books;
+          console.info(`Loaded ${books.length} books from ${LIBRARY_JSON_URL}.`);
+        }
+      } catch (error) {
+        activeLibrary = LOCAL_LIBRARY;
+        console.warn("External library was not loaded. Using embedded fallback library.", error);
+      }
+    }
+
+    function normalizeLibrarySource(data) {
+      const list = Array.isArray(data)
+        ? data
+        : Array.isArray(data.books)
+          ? data.books
+          : Array.isArray(data.library)
+            ? data.library
+            : [];
+
+      return list.map(normalizeLibraryBook).filter((book) => book.title);
+    }
+
+    function normalizeLibraryBook(raw, index) {
+      const title = textOf(raw.title || raw.book_title);
+      const author = textOf(raw.author || raw.book_author);
+      const category = textOf(raw.category || raw.book_category || raw.format);
+      const tags = uniqueValues([
+        ...arrayOf(raw.themes),
+        ...arrayOf(raw.search_keywords),
+        ...arrayOf(raw.suitable_for),
+        category,
+        raw.format,
+        raw.reading_level,
+        raw.grade_range,
+        raw.origin
+      ].map(textOf).filter(Boolean));
+      const gradeSpan = inferGradeSpan(raw.grade_range, raw.age_range, raw.reading_level);
+      const summary = textOf(raw.description || raw.summary || raw.book_summary || raw.recommend_reason);
+      const reason = textOf(raw.recommend_reason || raw.reason_for_child || raw.reason || summary);
+
+      return {
+        id: textOf(raw.id) || `library-book-${index + 1}`,
+        title,
+        author,
+        category,
+        level: inferBookLevel(raw, gradeSpan),
+        minGrade: gradeSpan.min,
+        maxGrade: gradeSpan.max,
+        tags,
+        location: textOf(raw.library_location || raw.location || raw.call_number) || "馆藏位置待补充",
+        summary,
+        reason_for_child: reason || "这本书和你的兴趣比较接近，可以先试着读一读。",
+        reading_tip: textOf(raw.reading_tip) || buildReadingTipForBook(raw, tags),
+        questions: normalizeBookQuestions(raw.questions)
+      };
+    }
+
+    function arrayOf(value) {
+      if (Array.isArray(value)) {
+        return value;
+      }
+      if (value === null || value === undefined || value === "") {
+        return [];
+      }
+      return [value];
+    }
+
+    function uniqueValues(values) {
+      return Array.from(new Set(values.map(textOf).filter(Boolean)));
+    }
+
+    function inferGradeSpan(gradeRange, ageRange, readingLevel) {
+      const gradeText = textOf(gradeRange);
+      const ageText = textOf(ageRange);
+      let min = 1;
+      let max = 6;
+
+      if (/幼儿园/.test(gradeText)) {
+        min = 1;
+        max = /低中年级/.test(gradeText) ? 4 : 2;
+      }
+      if (/低年级/.test(gradeText)) {
+        min = Math.min(min, 1);
+        max = Math.min(max, 2);
+      }
+      if (/低中年级/.test(gradeText)) {
+        min = Math.min(min, 1);
+        max = Math.min(max, 4);
+      }
+      if (/中年级/.test(gradeText) && !/低中年级|中高年级/.test(gradeText)) {
+        min = Math.max(min, 3);
+        max = Math.min(max, 4);
+      }
+      if (/中高年级/.test(gradeText)) {
+        min = Math.max(min, 3);
+        max = 6;
+      }
+      if (/高年级/.test(gradeText)) {
+        min = Math.max(min, 5);
+        max = 6;
+      }
+      if (/初中|及以上/.test(gradeText) && !/小学/.test(gradeText)) {
+        min = 6;
+        max = 6;
+      }
+
+      const ageMatch = ageText.match(/(\d+)\s*-\s*(\d+)/);
+      if (ageMatch && !gradeText) {
+        min = clamp(Number(ageMatch[1]) - 6, 1, 6);
+        max = clamp(Number(ageMatch[2]) - 6, 1, 6);
+      }
+
+      const level = textOf(readingLevel);
+      if (/较难|中等偏难/.test(level) && min < 3) {
+        min = 3;
+      }
+
+      return { min, max: Math.max(min, max) };
+    }
+
+    function inferBookLevel(raw, gradeSpan) {
+      const text = [
+        raw.category,
+        raw.format,
+        raw.reading_level,
+        raw.grade_range,
+        ...arrayOf(raw.themes)
+      ].map(textOf).join(" ");
+
+      if (/经典|名著|四大名著|古典|传统文化|较难|中等偏难/.test(text) || gradeSpan.min >= 5) {
+        return "classic_books";
+      }
+      if (/绘本|漫画|图像|低幼|较易/.test(text) || gradeSpan.max <= 2) {
+        return "interest_books";
+      }
+      return "bridge_books";
+    }
+
+    function buildReadingTipForBook(raw, tags) {
+      if (tags.some((tag) => /科普|科学|自然|百科/.test(tag))) {
+        return "读的时候可以记下一个新知识，再用自己的话讲给家长听。";
+      }
+      if (tags.some((tag) => /推理|侦探|悬疑|冒险/.test(tag))) {
+        return "读的时候可以留意关键线索，想一想故事为什么会这样发展。";
+      }
+      if (tags.some((tag) => /绘本|漫画|图像/.test(tag))) {
+        return "读的时候可以观察图画细节，说说哪一页最吸引你。";
+      }
+      return "读的时候可以记下一个人物、一件事情和一个自己的感受。";
+    }
+
+    function normalizeBookQuestions(list) {
+      if (!Array.isArray(list)) {
+        return [];
+      }
+      return list.map((item) => ({
+        question: textOf(item.question),
+        reference_answer: textOf(item.reference_answer),
+        dimension: textOf(item.dimension)
+      })).filter((item) => item.question);
+    }
+
+    function getActiveLibrary() {
+      return Array.isArray(activeLibrary) && activeLibrary.length ? activeLibrary : LOCAL_LIBRARY;
     }
 
     function buildLocalWorkflowResponse(body) {
@@ -1427,7 +1616,8 @@
     function buildLocalRecommendation(body) {
       const gradeNumber = gradeToNumber(body.grade);
       const interestProfile = buildInterestProfile(body.user_query || "");
-      const ranked = LOCAL_LIBRARY
+      const library = getActiveLibrary();
+      const ranked = library
         .map((book) => ({
           book,
           relevance: scoreLocalRelevance(book, interestProfile),
@@ -1459,7 +1649,7 @@
       const relevant = sameLevel.filter((item) => item.relevance > 0);
       let picked = (enforceRelevance ? relevant : relevant.length ? relevant : sameLevel).slice(0, limit);
       if (!picked.length && !enforceRelevance) {
-        picked = LOCAL_LIBRARY
+        picked = getActiveLibrary()
           .filter((book) => book.level === level)
           .slice(0, limit)
           .map((book) => ({ book, score: 0 }));
@@ -1534,7 +1724,7 @@
         return 60;
       }
 
-      const bookWords = book ? [book.title, book.author, ...book.tags].filter(Boolean) : [];
+      const bookWords = book ? [book.title, book.author, ...arrayOf(book.tags)].filter(Boolean) : [];
       const total = answers.reduce((sum, item) => {
         const answer = textOf(item.child_answer);
         let points = 0;
@@ -1559,7 +1749,7 @@
           : "classic_books";
       const interestProfile = buildInterestProfile(appState.profile.user_query || "");
 
-      return LOCAL_LIBRARY
+      return getActiveLibrary()
         .filter((book) => book.level === nextLevel && (!currentBook || book.id !== currentBook.id))
         .map((book) => ({
           book,
@@ -1576,8 +1766,9 @@
     function findLocalBook(title, author) {
       const normalizedTitle = stripBookMarks(title);
       const normalizedAuthor = textOf(author);
-      return LOCAL_LIBRARY.find((book) => stripBookMarks(book.title) === normalizedTitle && (!normalizedAuthor || book.author === normalizedAuthor))
-        || LOCAL_LIBRARY.find((book) => stripBookMarks(book.title) === normalizedTitle)
+      const library = getActiveLibrary();
+      return library.find((book) => stripBookMarks(book.title) === normalizedTitle && (!normalizedAuthor || book.author === normalizedAuthor))
+        || library.find((book) => stripBookMarks(book.title) === normalizedTitle)
         || null;
     }
 
@@ -1586,12 +1777,41 @@
       const groups = getInterestGroups(rawText);
       const specificGroups = groups.filter((group) => group.kind === "specific");
       const activeGroups = specificGroups.length ? specificGroups : groups;
+      const matchedLibraryTerms = getMatchedLibraryTerms(rawText);
+      const searchTerms = uniqueValues([
+        ...getSearchTerms(rawText),
+        ...getSearchTerms(stripGenericInterestWords(rawText)),
+        ...matchedLibraryTerms
+      ]);
+      const requiredTerms = matchedLibraryTerms.length
+        ? matchedLibraryTerms
+        : searchTerms.filter((term) => !BROAD_DIRECT_TERMS.includes(term));
 
       return {
         activeGroups,
         expandedText: expandInterestText(rawText),
-        enforceRelevance: shouldEnforceRelevance(rawText)
+        enforceRelevance: shouldEnforceRelevance(rawText),
+        searchTerms,
+        requiredTerms
       };
+    }
+
+    function getMatchedLibraryTerms(value) {
+      const text = textOf(value).toLowerCase();
+      if (!text) {
+        return [];
+      }
+
+      const terms = [];
+      getActiveLibrary().forEach((book) => {
+        arrayOf(book.tags).forEach((tag) => {
+          const term = textOf(tag).toLowerCase();
+          if (term.length >= 2 && !BROAD_DIRECT_TERMS.includes(term) && text.includes(term)) {
+            terms.push(term);
+          }
+        });
+      });
+      return uniqueValues(terms);
     }
 
     function getInterestGroups(text) {
@@ -1614,10 +1834,13 @@
     }
 
     function shouldEnforceRelevance(value) {
-      const text = textOf(value).toLowerCase();
-      const genericOnly = text
-        .replace(/我|想|要|读|看|喜欢|一本|一些|有关|相关|的|书|书籍|故事|可以|推荐|帮我|给我|和|跟|也|吗|呀|呢|啊|。|，|、|\s/g, "");
-      return genericOnly.length >= 2;
+      return stripGenericInterestWords(value).replace(/\s/g, "").length >= 2;
+    }
+
+    function stripGenericInterestWords(value) {
+      return textOf(value)
+        .toLowerCase()
+        .replace(/我|想|要|读|看|喜欢|一本|一些|有关|相关|的|书|书籍|故事|可以|推荐|帮我|给我|和|跟|也|吗|呀|呢|啊|。|，|、|\s/g, " ");
     }
 
     function scoreLocalRelevance(book, interestProfile) {
@@ -1627,17 +1850,31 @@
 
       const haystack = buildBookSearchText(book);
       let relevance = 0;
+      const directTerms = Array.isArray(interestProfile.searchTerms)
+        ? interestProfile.searchTerms
+        : getSearchTerms(interestProfile.expandedText || "");
+      const requiredTerms = Array.isArray(interestProfile.requiredTerms)
+        ? interestProfile.requiredTerms
+        : [];
+      const requiredDirectScore = requiredTerms.length ? scoreDirectTerms(haystack, requiredTerms) : 0;
+
+      if (interestProfile.enforceRelevance && requiredTerms.length && requiredDirectScore === 0) {
+        return 0;
+      }
 
       if (interestProfile.activeGroups.length) {
         const groupScores = interestProfile.activeGroups.map((group) => scoreInterestGroup(haystack, group));
-        if (interestProfile.enforceRelevance && groupScores.some((score) => score === 0)) {
+        const directScore = scoreDirectTerms(haystack, directTerms);
+        if (interestProfile.enforceRelevance && groupScores.some((score) => score === 0) && directScore === 0) {
           return 0;
         }
-        return groupScores.reduce((sum, score) => sum + score, 0) + (groupScores.every((score) => score > 0) ? 6 : 0);
+        return groupScores.reduce((sum, score) => sum + score, 0)
+          + directScore
+          + (groupScores.every((score) => score > 0) ? 6 : 0);
       }
 
       if (interestProfile.enforceRelevance) {
-        return 0;
+        return scoreDirectTerms(haystack, directTerms);
       }
 
       getSearchTerms(interestProfile.expandedText).forEach((term) => {
@@ -1650,11 +1887,20 @@
     }
 
     function buildBookSearchText(book) {
-      return textOf(`${book.title} ${book.author} ${book.category} ${book.summary} ${book.tags.join(" ")}`).toLowerCase();
+      return textOf(`${book.title} ${book.author} ${book.category} ${book.summary} ${arrayOf(book.tags).join(" ")}`).toLowerCase();
     }
 
     function scoreInterestGroup(haystack, group) {
       return group.terms.reduce((score, term) => score + (haystack.includes(term) ? 10 : 0), 0);
+    }
+
+    function scoreDirectTerms(haystack, terms) {
+      return terms.reduce((score, term) => {
+        if (!term) {
+          return score;
+        }
+        return score + (haystack.includes(term) ? 8 : 0);
+      }, 0);
     }
 
     function scoreLocalBook(book, interestProfile, gradeNumber, readingHistory) {

@@ -71,3 +71,12 @@ https://lmissd.github.io/library_pku/
 - 当前数据和知识库状态：默认使用 `index.html` 内置本地书库，`USE_LOCAL_LIBRARY_FIRST = true`，用于保证最小 demo 可以不依赖外部 API 跑通。
 - 当前推荐策略：明确主题输入优先匹配相关书籍，不再为了凑满三层推荐混入明显不相关主题的书；未匹配层级可以为空。
 - 当前部署判断：Gitee 适合做国内代码仓库和版本备份，但不建议把 Gitee Pages 当作主访问入口；更稳方案是“本地 Git -> Gitee 国内仓库 -> 腾讯云 CloudBase/Webify 静态托管 -> 给家长和小朋友一个国内 HTTPS 链接”。
+
+## 2026-06-05 1000 本书库版本
+
+- 用户提供的新知识库来源文件：`D:\library_pku\小学图书推荐知识库_1000本种子版.json`。
+- 已复制为部署用标准文件：`library.json`，顶层结构为 `metadata/schema/books`，`books` 共 1000 本。
+- `index.html` 已改为优先读取同目录 `library.json`；如果读取失败，会回退到原来的内置小书库，避免页面不可用。
+- 当前仍未调用 Coze 工作流；推荐、问题和评估仍走前端本地逻辑，只是书库从内置 10 本升级为外部 `library.json` 1000 本。
+- 已做核心复测：`足球`、`动物`、`历史冒险`、`数学` 都能从 1000 本书库命中结果；选择《我的第一本足球书》后可生成 3 个阅读问题并完成评估。
+- CloudBase 重新部署时必须同时上传 `index.html` 和 `library.json`，否则线上会回退到内置小书库。
