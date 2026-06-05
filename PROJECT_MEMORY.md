@@ -61,3 +61,13 @@ https://lmissd.github.io/library_pku/
 - 修复孩子端点击“我回答完了”后本地评估报 `Cannot read properties of undefined (reading 'length')` 的问题。
 - 根因是下一本推荐计算里把兴趣文本当成兴趣画像对象传入，导致本地书籍相关性打分读取 `activeGroups.length` 时报错。
 - 已复测：动物/恐龙主题推荐《恐龙大陆》《神奇校车》《森林报》；选择《恐龙大陆》后完成 3 个问题提交，可进入“回答已保存”，家长端可显示阅读反馈、阅读路径和孩子阅读画像。
+
+## 2026-06-05 当前版本快照
+
+- 当前本地版本提交：`848c56d Fix local reading evaluation submission`。
+- 当前分支：`master`，本地比 `origin/master` 领先 1 个提交；原因是当前网络无法连接 `github.com:443`，`git push` 尚未成功。
+- 线上 GitHub Pages 链接仍是 `https://lmissd.github.io/library_pku/`，但在推送成功前，线上页面还没有包含 `848c56d` 的修复。
+- 当前 H5 功能状态：首屏为“小朋友端 / 家长端”；小朋友端完成找书、选书、我已读完、小问答；家长端显示阅读反馈、阅读路径、家长可说的话和孩子阅读画像。
+- 当前数据和知识库状态：默认使用 `index.html` 内置本地书库，`USE_LOCAL_LIBRARY_FIRST = true`，用于保证最小 demo 可以不依赖外部 API 跑通。
+- 当前推荐策略：明确主题输入优先匹配相关书籍，不再为了凑满三层推荐混入明显不相关主题的书；未匹配层级可以为空。
+- 当前部署判断：Gitee 适合做国内代码仓库和版本备份，但不建议把 Gitee Pages 当作主访问入口；更稳方案是“本地 Git -> Gitee 国内仓库 -> 腾讯云 CloudBase/Webify 静态托管 -> 给家长和小朋友一个国内 HTTPS 链接”。
