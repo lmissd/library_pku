@@ -1557,13 +1557,13 @@
         : currentBook && currentBook.level === "bridge_books"
           ? "classic_books"
           : "classic_books";
-      const interestText = expandInterestText(appState.profile.user_query || "");
+      const interestProfile = buildInterestProfile(appState.profile.user_query || "");
 
       return LOCAL_LIBRARY
         .filter((book) => book.level === nextLevel && (!currentBook || book.id !== currentBook.id))
         .map((book) => ({
           book,
-          score: scoreLocalBook(book, interestText, gradeNumber, "")
+          score: scoreLocalBook(book, interestProfile, gradeNumber, "")
         }))
         .sort((a, b) => b.score - a.score)[0]?.book || null;
     }
@@ -1621,6 +1621,10 @@
     }
 
     function scoreLocalRelevance(book, interestProfile) {
+      if (!interestProfile || !Array.isArray(interestProfile.activeGroups)) {
+        interestProfile = buildInterestProfile(interestProfile);
+      }
+
       const haystack = buildBookSearchText(book);
       let relevance = 0;
 

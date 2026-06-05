@@ -55,3 +55,9 @@ https://lmissd.github.io/library_pku/
 - `index.html`：手机端 H5 主页面。
 - `README.md`：项目说明。
 - `PROJECT_MEMORY.md`：项目记忆。
+
+## 2026-06-05 修复记录
+
+- 修复孩子端点击“我回答完了”后本地评估报 `Cannot read properties of undefined (reading 'length')` 的问题。
+- 根因是下一本推荐计算里把兴趣文本当成兴趣画像对象传入，导致本地书籍相关性打分读取 `activeGroups.length` 时报错。
+- 已复测：动物/恐龙主题推荐《恐龙大陆》《神奇校车》《森林报》；选择《恐龙大陆》后完成 3 个问题提交，可进入“回答已保存”，家长端可显示阅读反馈、阅读路径和孩子阅读画像。
