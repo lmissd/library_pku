@@ -759,7 +759,7 @@
 
   <script>
     const STATE_KEY = "pkuReadingH5StateV2";
-    const REQUEST_TIMEOUT = 60000;
+    const REQUEST_TIMEOUT = 15000;
     const WORKFLOW_API_URL = "https://cqccmb7q97.coze.site/run";
 
     const DEFAULT_LIBRARY_CANDIDATES = [
@@ -774,6 +774,199 @@
       "《森林报》|维·比安基|自然/科普|二层自然科普 C-15",
       "《中国神话故事》|袁珂 编著|传统文化/神话|二层经典阅读 F-01"
     ].join("\n");
+
+    const LOCAL_LIBRARY = [
+      {
+        id: "mi-xiao-quan",
+        title: "米小圈上学记",
+        author: "北猫",
+        category: "文学/校园/幽默",
+        level: "interest_books",
+        minGrade: 1,
+        maxGrade: 4,
+        tags: ["搞笑", "校园", "朋友", "上学", "轻松", "二年级", "薄一点"],
+        location: "一层儿童文学 A-03",
+        summary: "米小圈在学校和家里遇到许多好玩的小事，故事轻松、贴近小学生生活，适合从兴趣开始进入整本书阅读。",
+        reason_for_child: "如果你想读好笑、像同学日常一样的故事，可以先从这本开始。",
+        reading_tip: "读的时候可以记下一个最像自己班级生活的片段。",
+        questions: [
+          { dimension: "人物角色", question: "米小圈是一个什么样的小朋友？请说出一个让你这么觉得的地方。", reference_answer: "可以提到他活泼、调皮、爱想办法，也可以结合学校或家庭里的具体小事说明。" },
+          { dimension: "故事情节", question: "书里哪个校园小故事最让你想笑？发生了什么？", reference_answer: "能说出一个具体事件，比如同学、老师或家里的趣事，并说明为什么好笑。" },
+          { dimension: "联系生活", question: "这个故事有没有让你想到自己学校里的事？你想到了什么？", reference_answer: "能把故事和自己的班级、朋友、老师或上学经历联系起来。" }
+        ]
+      },
+      {
+        id: "father-and-son",
+        title: "父与子全集",
+        author: "埃·奥·卜劳恩",
+        category: "漫画/幽默",
+        level: "interest_books",
+        minGrade: 1,
+        maxGrade: 6,
+        tags: ["漫画", "搞笑", "幽默", "亲子", "图画", "轻松", "薄一点"],
+        location: "一层绘本漫画 B-08",
+        summary: "这是一套经典幽默漫画，用连续图画讲父亲和儿子之间温暖又好笑的小故事。",
+        reason_for_child: "你喜欢搞笑漫画的话，这本不用读很多字，也能看懂很多有趣的反转。",
+        reading_tip: "每看完一页，试着用自己的话讲出笑点在哪里。",
+        questions: [
+          { dimension: "人物角色", question: "这本漫画里的爸爸和儿子分别给你什么感觉？", reference_answer: "可以说爸爸疼爱孩子、幽默或有点笨拙，儿子调皮、聪明，也要结合一幅漫画说明。" },
+          { dimension: "故事情节", question: "请讲一个你记住的漫画情节，它为什么好笑？", reference_answer: "能说出漫画里发生了什么，以及最后的反转或表情为什么让人想笑。" },
+          { dimension: "主题理解", question: "这些搞笑故事里，你有没有感受到爸爸和儿子的关系？", reference_answer: "能说出亲子之间的陪伴、关心、捣蛋和包容等感受。" }
+        ]
+      },
+      {
+        id: "dinosaur-continent",
+        title: "恐龙大陆",
+        author: "黑川光广",
+        category: "绘本/恐龙/科普",
+        level: "interest_books",
+        minGrade: 1,
+        maxGrade: 3,
+        tags: ["恐龙", "动物", "科普", "绘本", "冒险", "图画"],
+        location: "二层自然科普 C-02",
+        summary: "书里用故事和图画带孩子认识恐龙世界，适合喜欢动物、史前生物和冒险的小读者。",
+        reason_for_child: "如果你喜欢恐龙和大大的图画，这本可以一边看故事一边认识恐龙。",
+        reading_tip: "读完后选一种恐龙，说说它有什么特点。",
+        questions: [
+          { dimension: "知识理解", question: "你在书里认识了哪一种恐龙？它有什么特点？", reference_answer: "能说出一种恐龙，并说出外形、生活方式或特别本领。" },
+          { dimension: "故事情节", question: "书里让你最紧张或最有冒险感的一幕是什么？", reference_answer: "能描述一个具体画面或情节，并说出紧张在哪里。" },
+          { dimension: "观察表达", question: "如果把这本书推荐给同学，你会让他先看哪一页或哪一段？", reference_answer: "能指出一个具体内容，并说明推荐理由。" }
+        ]
+      },
+      {
+        id: "magic-school-bus",
+        title: "神奇校车",
+        author: "乔安娜·柯尔",
+        category: "科普/冒险",
+        level: "bridge_books",
+        minGrade: 1,
+        maxGrade: 5,
+        tags: ["科普", "冒险", "科学", "自然", "校车", "动物", "恐龙"],
+        location: "二层自然科普 C-10",
+        summary: "卷毛老师带着孩子们坐上会变形的校车，进入身体、太空、海洋等奇妙场景学习科学知识。",
+        reason_for_child: "如果你想把故事和科学一起读，这本能把知识变成冒险。",
+        reading_tip: "读的时候圈出一个你以前不知道的新知识。",
+        questions: [
+          { dimension: "故事情节", question: "神奇校车这次去了哪里？大家在那里发现了什么？", reference_answer: "能说出一次旅行地点和一个具体发现。" },
+          { dimension: "知识理解", question: "你从这本书里学到一个什么科学知识？", reference_answer: "能说出一个和自然、身体、太空或动物有关的知识点。" },
+          { dimension: "人物角色", question: "卷毛老师为什么能让科学课变得有意思？", reference_answer: "可以提到她带大家亲自观察、冒险、提问和发现。" }
+        ]
+      },
+      {
+        id: "hareta-pig",
+        title: "晴天有时下猪",
+        author: "矢玉四郎",
+        category: "文学/想象/幽默",
+        level: "bridge_books",
+        minGrade: 2,
+        maxGrade: 5,
+        tags: ["搞笑", "想象", "奇怪", "幽默", "桥梁书", "薄一点"],
+        location: "一层桥梁阅读 D-06",
+        summary: "故事把孩子的日记、想象和荒诞情节连在一起，语言轻快，适合从短故事走向更完整的桥梁书。",
+        reason_for_child: "如果你喜欢奇奇怪怪、越想越好笑的故事，它很适合接在漫画后面读。",
+        reading_tip: "读完后试着写一句自己的奇怪日记。",
+        questions: [
+          { dimension: "故事情节", question: "故事里发生了哪件特别奇怪或特别好笑的事？", reference_answer: "能说出一个荒诞情节，并说明它奇怪在哪里。" },
+          { dimension: "人物角色", question: "主人公面对奇怪事情时是什么反应？", reference_answer: "能结合情节说出主人公的想法、害怕、惊讶或好奇。" },
+          { dimension: "想象表达", question: "如果你也写一篇奇怪日记，你会让什么从天上掉下来？为什么？", reference_answer: "能借故事展开自己的想象，并说明理由。" }
+        ]
+      },
+      {
+        id: "charlie-ix",
+        title: "查理九世",
+        author: "雷欧幻像",
+        category: "侦探/冒险",
+        level: "bridge_books",
+        minGrade: 3,
+        maxGrade: 6,
+        tags: ["侦探", "冒险", "推理", "悬疑", "伙伴", "勇敢"],
+        location: "一层桥梁阅读 D-12",
+        summary: "小伙伴们一起面对谜团和冒险，通过线索、勇气和合作推动故事发展。",
+        reason_for_child: "如果你想读更刺激的故事，可以用它练习抓线索、猜真相。",
+        reading_tip: "读的时候记下一个重要线索，看最后有没有用上。",
+        questions: [
+          { dimension: "故事情节", question: "这本书里最重要的谜团或任务是什么？", reference_answer: "能说出故事要解决的问题，以及小伙伴们为什么要去调查。" },
+          { dimension: "推理理解", question: "你记住了哪一个线索？它后来有什么作用？", reference_answer: "能说出一个线索，并说明它和真相或后续行动的关系。" },
+          { dimension: "人物角色", question: "你觉得哪位角色最勇敢或最会想办法？为什么？", reference_answer: "能结合一次行动或决定说明人物特点。" }
+        ]
+      },
+      {
+        id: "totto-chan",
+        title: "窗边的小豆豆",
+        author: "黑柳彻子",
+        category: "文学/成长",
+        level: "classic_books",
+        minGrade: 3,
+        maxGrade: 6,
+        tags: ["校园", "成长", "经典", "老师", "朋友", "温暖"],
+        location: "二层经典阅读 E-04",
+        summary: "小豆豆来到巴学园，在理解孩子的校长和老师陪伴下，慢慢发现自己的独特和快乐。",
+        reason_for_child: "当你能读长一点的校园故事时，这本会让你看到学校也可以很温暖、很自由。",
+        reading_tip: "读的时候想一想：巴学园和你的学校哪里一样，哪里不一样。",
+        questions: [
+          { dimension: "人物角色", question: "小豆豆是一个怎样的孩子？请用一个情节说明。", reference_answer: "可以说她好奇、活泼、特别，也要结合她在学校里的具体表现。" },
+          { dimension: "主题理解", question: "巴学园为什么让小豆豆感到快乐？", reference_answer: "能说出校长、老师、上课方式或同学关系带来的理解和尊重。" },
+          { dimension: "联系生活", question: "读完这本书，你希望学校里多一点什么？", reference_answer: "能把书里的学校生活和自己的想法联系起来。" }
+        ]
+      },
+      {
+        id: "little-prince",
+        title: "小王子",
+        author: "圣埃克苏佩里",
+        category: "经典/哲思",
+        level: "classic_books",
+        minGrade: 4,
+        maxGrade: 6,
+        tags: ["经典", "星球", "友情", "想象", "哲思", "玫瑰"],
+        location: "二层经典阅读 E-09",
+        summary: "小王子离开自己的星球，遇见不同的人和事，慢慢理解爱、责任、孤独与友谊。",
+        reason_for_child: "这本书字不算难，但有很多可以慢慢想的地方，适合读完桥梁书后挑战。",
+        reading_tip: "读的时候记下一个你觉得像谜语一样的句子。",
+        questions: [
+          { dimension: "人物角色", question: "小王子最在意谁或什么？你从哪里看出来？", reference_answer: "可以提到玫瑰、狐狸或自己的星球，并结合行动说明。" },
+          { dimension: "主题理解", question: "狐狸让小王子明白了什么？", reference_answer: "能说出驯养、陪伴、责任或朋友之间特别关系的意思。" },
+          { dimension: "感受表达", question: "书里哪一句话或哪一幕让你停下来想了一想？为什么？", reference_answer: "能说出一个具体句子或情节，并表达自己的理解。" }
+        ]
+      },
+      {
+        id: "forest-newspaper",
+        title: "森林报",
+        author: "维·比安基",
+        category: "自然/科普",
+        level: "classic_books",
+        minGrade: 3,
+        maxGrade: 6,
+        tags: ["自然", "科普", "动物", "森林", "观察", "四季"],
+        location: "二层自然科普 C-15",
+        summary: "这本书像一份森林里的报纸，记录动物、植物和四季变化，适合喜欢自然观察的孩子。",
+        reason_for_child: "如果你喜欢动物和自然，这本能带你从故事走向更细致的观察。",
+        reading_tip: "读完后找一个身边的自然现象，写一句自己的观察记录。",
+        questions: [
+          { dimension: "知识理解", question: "书里写到了哪一种动物或植物？它有什么变化或特点？", reference_answer: "能说出一种动植物，并说明它在季节、生活或行为上的特点。" },
+          { dimension: "内容梳理", question: "为什么这本书像一份森林里的报纸？", reference_answer: "能说出它记录了森林里的新闻、变化、动物活动或季节故事。" },
+          { dimension: "观察表达", question: "读完后，你想去观察身边的什么？", reference_answer: "能提出一个具体观察对象，比如树、鸟、昆虫、天气或四季变化。" }
+        ]
+      },
+      {
+        id: "chinese-myths",
+        title: "中国神话故事",
+        author: "袁珂 编著",
+        category: "传统文化/神话",
+        level: "classic_books",
+        minGrade: 2,
+        maxGrade: 6,
+        tags: ["神话", "传统文化", "英雄", "想象", "故事", "中国"],
+        location: "二层经典阅读 F-01",
+        summary: "书里有女娲、夸父、后羿等中国神话人物，故事想象大胆，也能认识传统文化。",
+        reason_for_child: "如果你喜欢很有想象力、像远古冒险一样的故事，可以读这本拓展。",
+        reading_tip: "读完后选一个神话人物，说说他的愿望或本领。",
+        questions: [
+          { dimension: "人物角色", question: "你记住了哪一个神话人物？他或她做了什么？", reference_answer: "能说出一个人物和主要事件，比如补天、追日、射日等。" },
+          { dimension: "故事情节", question: "这个神话故事里最神奇的地方是什么？", reference_answer: "能描述一个超出现实的想象情节，并说明为什么神奇。" },
+          { dimension: "主题理解", question: "这个故事让你感受到人物有什么精神？", reference_answer: "可以说勇敢、坚持、保护大家、探索世界等，并结合故事说明。" }
+        ]
+      }
+    ];
 
     const BASE_PAYLOAD = {
       user_query: "",
@@ -998,10 +1191,275 @@
         } catch (error) {
           return text;
         }
+      } catch (error) {
+        console.warn("Workflow is unavailable. Using the local library.", error);
+        return buildLocalWorkflowResponse(body);
       } finally {
         window.clearTimeout(timer);
         hideLoading();
       }
+    }
+
+    function buildLocalWorkflowResponse(body) {
+      if (body.questions_and_answers) {
+        return {
+          reading_check_result: JSON.stringify(buildLocalEvaluation(body))
+        };
+      }
+
+      if (body.book_title) {
+        return {
+          reading_check_result: JSON.stringify({
+            questions: buildLocalQuestions(body)
+          })
+        };
+      }
+
+      return {
+        result: JSON.stringify(buildLocalRecommendation(body))
+      };
+    }
+
+    function buildLocalRecommendation(body) {
+      const gradeNumber = gradeToNumber(body.grade);
+      const interestText = expandInterestText(`${body.user_query || ""} ${body.reading_history || ""}`);
+      const ranked = LOCAL_LIBRARY
+        .map((book) => ({
+          book,
+          score: scoreLocalBook(book, interestText, gradeNumber, body.reading_history || "")
+        }))
+        .sort((a, b) => b.score - a.score || a.book.title.localeCompare(b.book.title, "zh-Hans-CN"));
+
+      const byLevel = {
+        interest_books: pickLocalBooks(ranked, "interest_books", 2),
+        bridge_books: pickLocalBooks(ranked, "bridge_books", 2),
+        classic_books: pickLocalBooks(ranked, "classic_books", 2)
+      };
+
+      return {
+        child_response: `我先从“${body.user_query || "你的兴趣"}”出发，帮你配了一条可以慢慢升级的阅读路线。先读轻松好进入的书，再试一试桥梁书，最后挑战经典或拓展书。`,
+        recommendations: byLevel,
+        reading_path: "兴趣入口书先把阅读兴趣点亮；桥梁书帮助你读更完整的故事；经典 / 拓展书适合读完后继续挑战。",
+        parent_message: "这是临时本地书库推荐结果。可以让孩子先选最想读的一本，读完后用小问答观察是否读懂人物、情节和主题。",
+        follow_up_question: "你想先读最搞笑的一本，还是最有冒险感的一本？"
+      };
+    }
+
+    function pickLocalBooks(ranked, level, limit) {
+      let picked = ranked.filter((item) => item.book.level === level).slice(0, limit);
+      if (!picked.length) {
+        picked = LOCAL_LIBRARY
+          .filter((book) => book.level === level)
+          .slice(0, limit)
+          .map((book) => ({ book, score: 0 }));
+      }
+
+      return picked.map(({ book }) => ({
+        title: book.title,
+        author: book.author,
+        reason_for_child: book.reason_for_child,
+        location: book.location,
+        value_type: getGroupLabel(book.level),
+        summary: book.summary,
+        book_category: book.category
+      }));
+    }
+
+    function buildLocalQuestions(body) {
+      const book = findLocalBook(body.book_title, body.book_author);
+      if (book && Array.isArray(book.questions) && book.questions.length) {
+        return book.questions.slice(0, 3);
+      }
+
+      const title = body.book_title || "这本书";
+      return [
+        {
+          question: `《${title}》里你印象最深的人物或内容是什么？`,
+          reference_answer: "能说出具体人物、场景或知识点，并说明为什么印象深。",
+          dimension: "人物角色/内容理解"
+        },
+        {
+          question: "请讲一讲这本书里你记住的一件重要事情。",
+          reference_answer: "能按顺序说出一件事情的起因、经过或结果。",
+          dimension: "故事情节"
+        },
+        {
+          question: "读完后，你最想把这本书推荐给谁？为什么？",
+          reference_answer: "能结合书的内容，说出自己的推荐理由。",
+          dimension: "主题理解"
+        }
+      ];
+    }
+
+    function buildLocalEvaluation(body) {
+      const book = findLocalBook(body.book_title, body.book_author);
+      const answers = parseQuestionsAndAnswers(body.questions_and_answers);
+      const score = scoreLocalAnswers(answers, book);
+      const nextBook = suggestNextLocalBook(book, body.grade);
+      const shortAnswers = answers.filter((item) => textOf(item.child_answer).length < 8).length;
+      const level = score >= 90 ? "读得非常好" : score >= 80 ? "读得比较认真" : score >= 70 ? "读懂了主要内容" : "还可以再翻一翻";
+
+      return {
+        level,
+        score,
+        summary: shortAnswers ? "你已经完成了阅读检测，能看出读过这本书。个别回答还可以再多写一点具体情节。" : "你能结合问题写出自己的回答，说明不是只看了封面，而是在认真回想书里的内容。",
+        detail_feedback: buildLocalDetailFeedback(answers, book),
+        encouragement: score >= 85 ? "很棒！继续保持这种边读边想的习惯，下一本可以稍微挑战一点。" : "已经迈出很重要的一步啦。再翻一翻书里最喜欢的部分，把细节补充出来，会读得更扎实。",
+        next_book_suggestion: nextBook ? `下一本可以试试《${nextBook.title}》：${nextBook.reason_for_child}` : "下一本可以从书单里选一本同类型、但稍微长一点的书。"
+      };
+    }
+
+    function buildLocalDetailFeedback(answers, book) {
+      const answeredCount = answers.filter((item) => textOf(item.child_answer)).length;
+      const bookTip = book ? `《${book.title}》适合重点回想人物、关键情节和读后的感受。` : "可以重点回想人物、关键情节和读后的感受。";
+      if (answeredCount >= 3) {
+        return `${bookTip} 你的回答覆盖了 ${answeredCount} 个问题，建议再补充一两个具体例子，比如“谁做了什么”“为什么这样做”。`;
+      }
+      return `${bookTip} 你已经回答了问题，建议再把答案写得更完整一些，尤其是加上书里的具体场景。`;
+    }
+
+    function scoreLocalAnswers(answers, book) {
+      if (!answers.length) {
+        return 60;
+      }
+
+      const bookWords = book ? [book.title, book.author, ...book.tags].filter(Boolean) : [];
+      const total = answers.reduce((sum, item) => {
+        const answer = textOf(item.child_answer);
+        let points = 0;
+        if (answer.length >= 4) points += 4;
+        if (answer.length >= 12) points += 3;
+        if (answer.length >= 28) points += 3;
+        if (/[，。！？、,.!?]/.test(answer)) points += 1;
+        if (bookWords.some((word) => word && answer.includes(word))) points += 2;
+        return sum + Math.min(points, 12);
+      }, 0);
+
+      const average = total / answers.length;
+      return clamp(Math.round(58 + average * 3.6), 60, 96);
+    }
+
+    function suggestNextLocalBook(currentBook, grade) {
+      const gradeNumber = gradeToNumber(grade);
+      const nextLevel = currentBook && currentBook.level === "interest_books"
+        ? "bridge_books"
+        : currentBook && currentBook.level === "bridge_books"
+          ? "classic_books"
+          : "classic_books";
+      const interestText = expandInterestText(appState.profile.user_query || "");
+
+      return LOCAL_LIBRARY
+        .filter((book) => book.level === nextLevel && (!currentBook || book.id !== currentBook.id))
+        .map((book) => ({
+          book,
+          score: scoreLocalBook(book, interestText, gradeNumber, "")
+        }))
+        .sort((a, b) => b.score - a.score)[0]?.book || null;
+    }
+
+    function parseQuestionsAndAnswers(value) {
+      const parsed = parseMaybeJson(value, "阅读回答");
+      return Array.isArray(parsed) ? parsed : [];
+    }
+
+    function findLocalBook(title, author) {
+      const normalizedTitle = stripBookMarks(title);
+      const normalizedAuthor = textOf(author);
+      return LOCAL_LIBRARY.find((book) => stripBookMarks(book.title) === normalizedTitle && (!normalizedAuthor || book.author === normalizedAuthor))
+        || LOCAL_LIBRARY.find((book) => stripBookMarks(book.title) === normalizedTitle)
+        || null;
+    }
+
+    function scoreLocalBook(book, interestText, gradeNumber, readingHistory) {
+      const haystack = expandInterestText(`${book.title} ${book.author} ${book.category} ${book.summary} ${book.reason_for_child} ${book.tags.join(" ")}`);
+      const history = textOf(readingHistory);
+      let score = 0;
+
+      if (Number.isFinite(gradeNumber)) {
+        if (gradeNumber >= book.minGrade && gradeNumber <= book.maxGrade) {
+          score += 12;
+        } else if (gradeNumber + 1 >= book.minGrade && gradeNumber - 1 <= book.maxGrade) {
+          score += 5;
+        } else {
+          score -= 4;
+        }
+      }
+
+      book.tags.forEach((tag) => {
+        if (interestText.includes(tag)) {
+          score += 8;
+        }
+      });
+
+      getSearchTerms(interestText).forEach((term) => {
+        if (haystack.includes(term)) {
+          score += 5;
+        }
+      });
+
+      if (history && history.includes(book.title)) {
+        score -= 18;
+      }
+
+      return score;
+    }
+
+    function expandInterestText(value) {
+      let text = textOf(value).toLowerCase();
+      const expansions = [
+        [/漫画|图画|绘本|连环画/, " 漫画 图画 绘本 轻松"],
+        [/搞笑|好笑|幽默|笑/, " 搞笑 幽默 轻松"],
+        [/恐龙|霸王龙|动物/, " 恐龙 动物 科普 自然"],
+        [/科学|科普|实验|自然/, " 科普 科学 自然"],
+        [/侦探|破案|推理|悬疑/, " 侦探 推理 冒险"],
+        [/冒险|刺激|探险/, " 冒险 勇敢 伙伴"],
+        [/校园|同学|老师|上学/, " 校园 上学 朋友"],
+        [/神话|传统|中国故事/, " 神话 传统文化 中国"],
+        [/经典|长一点|挑战/, " 经典 成长 哲思"],
+        [/薄|短|简单|轻松/, " 薄一点 轻松"]
+      ];
+
+      expansions.forEach(([pattern, extra]) => {
+        if (pattern.test(text)) {
+          text += extra;
+        }
+      });
+      return text;
+    }
+
+    function getSearchTerms(text) {
+      return Array.from(new Set(text.split(/[\s,，。；;、/]+/).map((item) => item.trim()).filter((item) => item.length >= 2)));
+    }
+
+    function gradeToNumber(grade) {
+      const text = textOf(grade);
+      const direct = text.match(/[1-6一二三四五六]/);
+      if (!direct) {
+        return NaN;
+      }
+      return {
+        "1": 1,
+        "2": 2,
+        "3": 3,
+        "4": 4,
+        "5": 5,
+        "6": 6,
+        "一": 1,
+        "二": 2,
+        "三": 3,
+        "四": 4,
+        "五": 5,
+        "六": 6
+      }[direct[0]];
+    }
+
+    function stripBookMarks(value) {
+      return textOf(value).replace(/[《》]/g, "");
+    }
+
+    function getGroupLabel(key) {
+      const group = GROUPS.find((item) => item.key === key);
+      return group ? group.label : "";
     }
 
     function parseRecommendationResponse(response) {
