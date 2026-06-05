@@ -4,7 +4,8 @@
   "private": true,
   "description": "北大附小智能阅读推荐 H5 与本机数据收集服务",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "public": "powershell -NoProfile -ExecutionPolicy Bypass -File ./start-public.ps1"
   },
   "engines": {
     "node": ">=18"

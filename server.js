@@ -19,6 +19,7 @@ const port = Number(process.env.PORT || config.port || 8080);
 const host = process.env.HOST || config.host || "0.0.0.0";
 const upstreamUrl = process.env.COZE_API_URL || config.cozeApiUrl || "https://cqccmb7q97.coze.site/run";
 const cozeToken = process.env.COZE_TOKEN || config.cozeToken || "";
+const accessCode = process.env.ACCESS_CODE || config.accessCode || "";
 
 const server = http.createServer(async (req, res) => {
   try {
@@ -55,6 +56,9 @@ server.listen(port, host, () => {
   if (!cozeToken) {
     console.log("提示：尚未配置 COZE_TOKEN 或 config.local.json 中的 cozeToken，/api/run 会提示配置 Token。");
   }
+  if (accessCode) {
+    console.log("访问码保护：已开启。手机页面提交前需要在“接口设置”里填写访问码。");
+  }
   console.log("");
 });
 
@@ -65,6 +69,21 @@ async function handleApiRun(req, res) {
   const payload = parseRequestJson(bodyText);
   const clientMeta = parseClientMeta(req.headers["x-reading-meta"]);
   const stage = getStage(payload);
+
+  if (accessCode && req.headers["x-access-code"] !== accessCode) {
+    const errorPayload = { error: "访问码不正确，请在页面“接口设置”里填写正确访问码。" };
+    await appendEvent({
+      id: requestId,
+      created_at: startedAt,
+      client_ip: req.socket.remoteAddress,
+      stage,
+      client_meta: clientMeta,
+      request: payload,
+      error: errorPayload.error
+    });
+    sendJson(res, 401, errorPayload);
+    return;
+  }
 
   if (!cozeToken && !req.headers.authorization) {
     const errorPayload = { error: "本机服务还没有配置 Coze Token，请设置 COZE_TOKEN 或 config.local.json。" };
@@ -290,6 +309,6 @@ function corsHeaders() {
   return {
     "Access-Control-Allow-Origin": "*",
     "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-    "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Reading-Meta"
+    "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Reading-Meta, X-Access-Code"
   };
 }

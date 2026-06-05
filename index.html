@@ -667,6 +667,10 @@
           <input id="apiTokenInput" type="password" placeholder="填写 YOUR_TOKEN，可留空" autocomplete="off">
         </label>
         <label>
+          访问码
+          <input id="accessCodeInput" type="password" placeholder="本机公网链接可选，用于保护 /api/run" autocomplete="off">
+        </label>
+        <label>
           馆藏候选内容
           <textarea id="libraryCandidatesInput" placeholder="可粘贴本地知识库或虚拟馆藏位置，提交时会传给 API"></textarea>
         </label>
@@ -860,6 +864,7 @@
     const fields = {
       apiUrl: document.querySelector("#apiUrlInput"),
       apiToken: document.querySelector("#apiTokenInput"),
+      accessCode: document.querySelector("#accessCodeInput"),
       libraryCandidates: document.querySelector("#libraryCandidatesInput"),
       name: document.querySelector("#nameInput"),
       grade: document.querySelector("#gradeInput"),
@@ -900,7 +905,7 @@
 
       Object.values(fields).forEach((field) => {
         field.addEventListener("input", () => {
-          if (field === fields.apiUrl || field === fields.apiToken || field === fields.libraryCandidates) {
+          if (field === fields.apiUrl || field === fields.apiToken || field === fields.accessCode || field === fields.libraryCandidates) {
             saveSettings();
             return;
           }
@@ -1021,20 +1026,24 @@
       const headers = {
         "Content-Type": "application/json"
       };
-      if (isLocalCollectorUrl(settings.apiUrl)) {
-        headers["X-Reading-Meta"] = encodeURIComponent(JSON.stringify(buildClientMeta(body)));
-      }
-      if (settings.apiToken) {
-        headers.Authorization = settings.apiToken.toLowerCase().startsWith("bearer ")
-          ? settings.apiToken
-          : `Bearer ${settings.apiToken}`;
-      }
 
       const body = {
         ...BASE_PAYLOAD,
         library_candidates: settings.libraryCandidates,
         ...overrides
       };
+
+      if (isLocalCollectorUrl(settings.apiUrl)) {
+        headers["X-Reading-Meta"] = encodeURIComponent(JSON.stringify(buildClientMeta(body)));
+        if (settings.accessCode) {
+          headers["X-Access-Code"] = settings.accessCode;
+        }
+      }
+      if (settings.apiToken) {
+        headers.Authorization = settings.apiToken.toLowerCase().startsWith("bearer ")
+          ? settings.apiToken
+          : `Bearer ${settings.apiToken}`;
+      }
 
       const controller = new AbortController();
       const timer = window.setTimeout(() => controller.abort(), REQUEST_TIMEOUT);
@@ -1465,6 +1474,7 @@
       const settings = readLocalJson(SETTINGS_KEY, {});
       fields.apiUrl.value = settings.apiUrl || getDefaultApiUrl();
       fields.apiToken.value = settings.apiToken || "";
+      fields.accessCode.value = settings.accessCode || "";
       fields.libraryCandidates.value = settings.libraryCandidates || DEFAULT_LIBRARY_CANDIDATES;
     }
 
@@ -1472,15 +1482,15 @@
       return {
         apiUrl: fields.apiUrl.value.trim(),
         apiToken: fields.apiToken.value.trim(),
+        accessCode: fields.accessCode.value.trim(),
         libraryCandidates: fields.libraryCandidates.value.trim()
       };
     }
 
     function getDefaultApiUrl() {
       const host = window.location.hostname;
-      const isLocalHost = host === "localhost" || host === "127.0.0.1";
-      const isLanHost = /^(10\.|192\.168\.|172\.(1[6-9]|2\d|3[0-1])\.)/.test(host);
-      return window.location.protocol.startsWith("http") && (isLocalHost || isLanHost) ? "/api/run" : "";
+      const isGithubPages = host === "github.io" || host.endsWith(".github.io");
+      return window.location.protocol.startsWith("http") && !isGithubPages ? "/api/run" : "";
     }
 
     function saveSettings() {

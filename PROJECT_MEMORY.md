@@ -2,7 +2,7 @@
 
 ## 当前目标
 
-为“北大附小智能阅读推荐”制作一个手机端 H5 页面，并提供一个本机服务，让手机可以通过局域网链接直接打开；测试阶段数据暂时写入用户这台电脑。
+为“北大附小智能阅读推荐”制作一个手机端 H5 页面，并提供一个本机服务和公网隧道启动方式，让不同手机在不同网络下也能通过 HTTPS 链接直接打开；测试阶段数据暂时写入用户这台电脑。
 
 ## 2026-06-05 最新版本要求
 
@@ -21,19 +21,21 @@
 
 - 新增 `server.js`，使用 Node.js 原生 `http` 实现，无外部依赖。
 - 本机服务负责：
-  - 托管 `index.html`，让手机通过 `http://电脑局域网IP:8080/` 打开。
+  - 托管 `index.html`，让手机通过本机局域网地址或 Cloudflare Tunnel 公网 HTTPS 地址打开。
   - 提供 `/api/run`，把页面请求转发到 Coze 工作流接口。
   - 把每次请求、返回、阶段、孩子姓名/年级/书名等元信息写入 `data/reading-events.jsonl`。
 - 新增 `config.local.example.json`，真实配置复制为 `config.local.json` 后填写 `cozeToken`。
+- `config.local.json` 可选填写 `accessCode`；如果配置了访问码，公网链接下的页面需要在“接口设置”里填写同一个访问码后才能调用 `/api/run`。
 - `config.local.json`、`data/`、`.env`、日志文件不提交到 GitHub。
-- 新增 `start-local.bat` 和 `package.json`，方便 Windows 双击或 `npm start` 启动。
+- 新增 `start-local.bat` 和 `package.json`，方便 Windows 双击或 `npm start` 启动局域网/本机服务。
+- 新增 `start-public.ps1`、`start-public.bat` 和 `npm run public`，用于启动 Cloudflare Quick Tunnel 公网临时链接。该链接可跨网络访问，但每次重新启动可能变化；如果需要固定长期链接，需要绑定 Cloudflare 账号/域名或部署云服务器。
 
 ## GitHub 与版本控制
 
 - 当前远程仓库：`https://github.com/lmissd/library_pku.git`
 - 当前分支：`master`
 - 本版本需要纳入 Git 管理并推送到 GitHub。
-- GitHub Pages 可以继续展示静态 H5，但静态页面不能把数据写回用户电脑；需要本机数据收集时必须启动 `server.js` 并让手机访问局域网链接。
+- GitHub Pages 可以继续展示静态 H5，但静态页面不能把数据写回用户电脑；需要本机数据收集时必须启动 `server.js`，并让手机访问公网隧道链接或局域网链接。
 
 ## 当前文件
 
@@ -42,5 +44,6 @@
 - `config.local.example.json`：本机服务配置样例。
 - `package.json`：启动脚本。
 - `start-local.bat`：Windows 双击启动脚本。
+- `start-public.ps1` / `start-public.bat`：Windows 启动公网隧道脚本。
 - `.gitignore`：排除本机数据和敏感配置。
 - `README.md`：使用说明。
