@@ -102,30 +102,6 @@
       font-size: 0.95rem;
     }
 
-    .settings {
-      margin-bottom: 14px;
-      border: 1px solid rgba(239, 220, 202, 0.95);
-      border-radius: var(--radius);
-      background: rgba(255, 255, 255, 0.94);
-      box-shadow: 0 6px 16px rgba(120, 78, 45, 0.08);
-      overflow: hidden;
-    }
-
-    .settings summary {
-      min-height: 46px;
-      padding: 12px 14px;
-      cursor: pointer;
-      color: var(--primary-dark);
-      font-weight: 900;
-      list-style-position: inside;
-    }
-
-    .settings-body {
-      display: grid;
-      gap: 12px;
-      padding: 0 14px 14px;
-    }
-
     .stepper {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
@@ -655,28 +631,6 @@
       </div>
     </header>
 
-    <details id="settingsPanel" class="settings">
-      <summary>接口设置</summary>
-      <div class="settings-body">
-        <label>
-          API 地址
-          <input id="apiUrlInput" type="url" placeholder="例如：https://cqccmb7q97.coze.site/run" autocomplete="off">
-        </label>
-        <label>
-          Bearer Token
-          <input id="apiTokenInput" type="password" placeholder="填写 YOUR_TOKEN，可留空" autocomplete="off">
-        </label>
-        <label>
-          访问码
-          <input id="accessCodeInput" type="password" placeholder="本机公网链接可选，用于保护 /api/run" autocomplete="off">
-        </label>
-        <label>
-          馆藏候选内容
-          <textarea id="libraryCandidatesInput" placeholder="可粘贴本地知识库或虚拟馆藏位置，提交时会传给 API"></textarea>
-        </label>
-      </div>
-    </details>
-
     <div class="stepper" aria-label="阅读流程">
       <div id="stepOne" class="step active">1 找书</div>
       <div id="stepTwo" class="step">2 小问答</div>
@@ -799,14 +753,14 @@
   <div id="loadingMask" class="loading-mask hidden" role="status" aria-live="polite">
     <div class="loading-box">
       <div class="spinner" aria-hidden="true"></div>
-      <div id="loadingText">正在请求接口...</div>
+      <div id="loadingText">正在联系阅读助手...</div>
     </div>
   </div>
 
   <script>
-    const SETTINGS_KEY = "pkuReadingH5SettingsV2";
     const STATE_KEY = "pkuReadingH5StateV2";
     const REQUEST_TIMEOUT = 60000;
+    const WORKFLOW_API_URL = "https://cqccmb7q97.coze.site/run";
 
     const DEFAULT_LIBRARY_CANDIDATES = [
       "《米小圈上学记》|北猫|文学/校园|一层儿童文学 A-03",
@@ -862,10 +816,6 @@
     };
 
     const fields = {
-      apiUrl: document.querySelector("#apiUrlInput"),
-      apiToken: document.querySelector("#apiTokenInput"),
-      accessCode: document.querySelector("#accessCodeInput"),
-      libraryCandidates: document.querySelector("#libraryCandidatesInput"),
       name: document.querySelector("#nameInput"),
       grade: document.querySelector("#gradeInput"),
       query: document.querySelector("#queryInput"),
@@ -878,11 +828,9 @@
     initialize();
 
     function initialize() {
-      loadSettings();
       loadState();
       bindEvents();
       renderFromState();
-      document.querySelector("#settingsPanel").open = !fields.apiUrl.value.trim();
     }
 
     function bindEvents() {
@@ -905,10 +853,6 @@
 
       Object.values(fields).forEach((field) => {
         field.addEventListener("input", () => {
-          if (field === fields.apiUrl || field === fields.apiToken || field === fields.accessCode || field === fields.libraryCandidates) {
-            saveSettings();
-            return;
-          }
           saveDraftProfile();
         });
       });
@@ -1018,39 +962,22 @@
     }
 
     async function postToApi(overrides, loadingText) {
-      const settings = readSettings();
-      if (!settings.apiUrl) {
-        throw new Error("请先填写 API 地址。");
-      }
-
       const headers = {
         "Content-Type": "application/json"
       };
 
       const body = {
         ...BASE_PAYLOAD,
-        library_candidates: settings.libraryCandidates,
+        library_candidates: DEFAULT_LIBRARY_CANDIDATES,
         ...overrides
       };
-
-      if (isLocalCollectorUrl(settings.apiUrl)) {
-        headers["X-Reading-Meta"] = encodeURIComponent(JSON.stringify(buildClientMeta(body)));
-        if (settings.accessCode) {
-          headers["X-Access-Code"] = settings.accessCode;
-        }
-      }
-      if (settings.apiToken) {
-        headers.Authorization = settings.apiToken.toLowerCase().startsWith("bearer ")
-          ? settings.apiToken
-          : `Bearer ${settings.apiToken}`;
-      }
 
       const controller = new AbortController();
       const timer = window.setTimeout(() => controller.abort(), REQUEST_TIMEOUT);
       showLoading(loadingText);
 
       try {
-        const response = await fetch(settings.apiUrl, {
+        const response = await fetch(WORKFLOW_API_URL, {
           method: "POST",
           headers,
           body: JSON.stringify(body),
@@ -1059,7 +986,7 @@
         const text = await response.text();
 
         if (!response.ok) {
-          throw new Error(`接口返回 ${response.status}：${summarizeText(text || response.statusText)}`);
+          throw new Error(getResponseErrorMessage(response.status));
         }
 
         if (!text.trim()) {
@@ -1075,33 +1002,6 @@
         window.clearTimeout(timer);
         hideLoading();
       }
-    }
-
-    function isLocalCollectorUrl(apiUrl) {
-      if (apiUrl === "/api/run") {
-        return true;
-      }
-
-      try {
-        const url = new URL(apiUrl, window.location.href);
-        return url.origin === window.location.origin && url.pathname === "/api/run";
-      } catch (error) {
-        return false;
-      }
-    }
-
-    function buildClientMeta(body) {
-      const selectedBook = appState.selectedBook || {};
-      return {
-        child_name: appState.profile.name || "",
-        grade: appState.profile.grade || body.grade || "",
-        stage: body.questions_and_answers ? "evaluation" : body.book_title ? "questions" : "recommendation",
-        book_title: body.book_title || selectedBook.title || "",
-        book_author: body.book_author || selectedBook.author || "",
-        page_url: window.location.href,
-        user_agent: navigator.userAgent,
-        saved_at: new Date().toISOString()
-      };
     }
 
     function parseRecommendationResponse(response) {
@@ -1142,7 +1042,7 @@
 
       const totalBooks = GROUPS.reduce((count, group) => count + normalized.recommendations[group.key].length, 0);
       if (!totalBooks) {
-        throw new Error("接口没有返回推荐书籍。");
+        throw new Error("阅读助手暂时没有找到合适的书，请稍后再试一次。");
       }
 
       return normalized;
@@ -1185,7 +1085,7 @@
       })).filter((item) => item.question);
 
       if (!questions.length) {
-        throw new Error("接口没有返回阅读检测问题。");
+        throw new Error("阅读助手暂时没有准备好小问题，请稍后再试一次。");
       }
 
       return questions;
@@ -1202,7 +1102,7 @@
       };
 
       if (!evaluation.level && evaluation.score === null && !evaluation.summary && !evaluation.detail_feedback) {
-        throw new Error("接口没有返回阅读评估结果。");
+        throw new Error("阅读助手暂时没有完成反馈，请稍后再试一次。");
       }
 
       return evaluation;
@@ -1269,7 +1169,7 @@
         if (!list.length) {
           const empty = document.createElement("p");
           empty.className = "empty-note";
-          empty.textContent = "接口暂时没有返回这一层书籍。";
+          empty.textContent = "这一层暂时没有合适的书，可以先看看其他层。";
           target.appendChild(empty);
           return;
         }
@@ -1318,15 +1218,15 @@
 
       const author = document.createElement("p");
       author.className = "book-author";
-      author.textContent = book.author ? `作者：${book.author}` : "作者：接口未返回";
+      author.textContent = book.author ? `作者：${book.author}` : "作者：暂未提供";
 
       const reason = document.createElement("p");
       reason.className = "reason";
-      reason.textContent = book.reason || "接口未返回推荐理由。";
+      reason.textContent = book.reason || "这本书很适合从兴趣出发慢慢读。";
 
       const location = document.createElement("div");
       location.className = "location";
-      location.textContent = book.location ? `📍 馆藏位置：${book.location}` : "📍 馆藏位置：接口未返回";
+      location.textContent = book.location ? `📍 馆藏位置：${book.location}` : "📍 馆藏位置：请到图书馆服务台咨询";
 
       const readButton = document.createElement("button");
       readButton.className = "primary-btn";
@@ -1470,37 +1370,6 @@
       persistState();
     }
 
-    function loadSettings() {
-      const settings = readLocalJson(SETTINGS_KEY, {});
-      fields.apiUrl.value = settings.apiUrl || getDefaultApiUrl();
-      fields.apiToken.value = settings.apiToken || "";
-      fields.accessCode.value = settings.accessCode || "";
-      fields.libraryCandidates.value = settings.libraryCandidates || DEFAULT_LIBRARY_CANDIDATES;
-    }
-
-    function readSettings() {
-      return {
-        apiUrl: fields.apiUrl.value.trim(),
-        apiToken: fields.apiToken.value.trim(),
-        accessCode: fields.accessCode.value.trim(),
-        libraryCandidates: fields.libraryCandidates.value.trim()
-      };
-    }
-
-    function getDefaultApiUrl() {
-      const host = window.location.hostname;
-      const isGithubPages = host === "github.io" || host.endsWith(".github.io");
-      return window.location.protocol.startsWith("http") && !isGithubPages ? "/api/run" : "";
-    }
-
-    function saveSettings() {
-      try {
-        localStorage.setItem(SETTINGS_KEY, JSON.stringify(readSettings()));
-      } catch (error) {
-        console.warn("Settings were not saved.", error);
-      }
-    }
-
     function loadState() {
       const saved = readLocalJson(STATE_KEY, null);
       if (saved && typeof saved === "object") {
@@ -1600,7 +1469,7 @@
           }
         }
 
-        throw new Error(`${label || "接口结果"}不是有效 JSON。`);
+        throw new Error("阅读助手返回的内容暂时无法识别，请稍后再试一次。");
       }
     }
 
@@ -1642,7 +1511,7 @@
     }
 
     function showLoading(message) {
-      document.querySelector("#loadingText").textContent = message || "正在请求接口...";
+      document.querySelector("#loadingText").textContent = message || "正在联系阅读助手...";
       document.querySelector("#loadingMask").classList.remove("hidden");
     }
 
@@ -1667,13 +1536,19 @@
 
     function getFriendlyError(error) {
       if (error && error.name === "AbortError") {
-        return "接口等待太久了，可以稍后再试一次。";
+        return "阅读助手等待太久了，可以稍后再试一次。";
       }
-      return error && error.message ? error.message : "刚刚没有连上接口，请检查地址和 Token 后再试。";
+      return error && error.message ? error.message : "阅读助手暂时连不上，请稍后再试一次。";
     }
 
-    function summarizeText(text) {
-      return String(text || "").replace(/\s+/g, " ").slice(0, 120) || "请求失败";
+    function getResponseErrorMessage(status) {
+      if (status === 401 || status === 403) {
+        return "阅读助手还没有准备好，请老师或图书馆老师先开启服务。";
+      }
+      if (status >= 500) {
+        return "阅读助手现在有点忙，请稍后再试一次。";
+      }
+      return "阅读助手暂时没有回应，请稍后再试一次。";
     }
 
     function clamp(value, min, max) {

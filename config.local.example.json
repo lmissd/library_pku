@@ -1,7 +1,0 @@
-{
-  "port": 8080,
-  "host": "0.0.0.0",
-  "cozeApiUrl": "https://cqccmb7q97.coze.site/run",
-  "cozeToken": "YOUR_TOKEN_HERE",
-  "accessCode": ""
-}
