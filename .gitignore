@@ -3,3 +3,5 @@ config.local.json
 .env
 *.log
 node_modules/
+cloudbase_upload/
+cloudbase_upload.zip
