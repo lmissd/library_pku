@@ -104,3 +104,16 @@ https://lmissd.github.io/library_pku/
 - GitHub 远端 `master` 已成功推送到 `https://github.com/lmissd/library_pku.git`。
 - CloudBase 上传包已重新生成：`D:\library_pku\cloudbase_upload.zip`，包含新版 `index.html` 与 1000 本书库 `library.json`。
 - 线上 CloudBase 更新方式仍是上传该 zip 并覆盖旧文件；更新后建议用 `?v=voice1` 打开，绕过手机缓存。
+
+## 2026-06-08 关键架构决策：读后评价接入大模型
+
+- 用户测试发现：当前孩子乱填 `123`、`321` 等无意义字符时，最后阅读评价仍可能显示“有明显阅读理解”，这暴露了前端规则评分的根本缺陷。
+- 当前阅读评价逻辑在 `index.html` 的 `buildLocalEvaluation()` / `scoreLocalAnswers()`：主要按回答长度、标点、是否包含书名/标签词打分，并把分数限制在 `60-96`，不能真正判断答案是否相关、是否读过书、是否答非所问。
+- 结论：读后评价和阅读画像必须升级为真正的大模型语义评估；前端规则只能作为兜底，不能作为正式评价依据。
+- 技术路线确定为：H5 前端 -> CloudBase 云函数 -> 第三方大模型中转站 API -> CloudBase 云函数返回结构化 JSON -> H5 展示评价与画像。
+- 用户已有第三方中转站 API Key，Codex 也在使用同类 Key；可以作为智能阅读项目的大模型接入来源。
+- API Key 绝不能写进 `index.html`，必须放在 CloudBase 云函数环境变量中，例如 `LLM_API_KEY`、`LLM_BASE_URL`、`LLM_MODEL`。
+- 建议新建 CloudBase 云函数 `evaluateReading`，不要改已有 `analyzeSafety`；运行环境选择 Node.js 18.15 / Node.js 18，函数类型普通函数。
+- 第一阶段只改“孩子点击我回答完了后的读后评价”这一步：找书推荐和问题生成暂时继续使用本地 1000 本 `library.json` 与现有规则逻辑。
+- 大模型评估必须严格识别无效回答：纯数字、乱码、重复字符、“不知道”、答非所问、没有人物/情节/知识点/真实感受，都应判为低分或“未能证明已认真阅读”。
+- 这是面向客户说明 AI 价值的核心升级点：从“阅读面板展示/规则统计”升级为“对孩子自然语言回答进行语义判断，判断是否真的读进去”。
