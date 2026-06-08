@@ -989,7 +989,10 @@
   <script>
     const STATE_KEY = "pkuReadingH5StateV3";
     const REQUEST_TIMEOUT = 15000;
+    const EVALUATION_TIMEOUT = 35000;
     const WORKFLOW_API_URL = "https://cqccmb7q97.coze.site/run";
+    const READING_EVALUATION_API_URL = "/api/evaluate-reading";
+    const ENABLE_LLM_READING_EVALUATION = !/^(file:|http:\/\/localhost|http:\/\/127\.0\.0\.1)/.test(window.location.href);
     const USE_LOCAL_LIBRARY_FIRST = true;
     const LIBRARY_JSON_URL = "library.json";
 
@@ -1520,14 +1523,31 @@
       }
 
       try {
-        const response = await postToApi({
+        const evaluationRequest = {
           book_title: appState.selectedBook.title,
           book_author: appState.selectedBook.author,
           book_summary: appState.selectedBook.summary,
           book_category: appState.selectedBook.category,
           grade: appState.profile.grade,
-          questions_and_answers: JSON.stringify(questionsAndAnswers)
-        }, "正在认真看看你的回答...");
+          questions_and_answers: questionsAndAnswers.map((item, index) => ({
+            ...item,
+            reference_answer: appState.questions[index]?.reference_answer || "",
+            dimension: appState.questions[index]?.dimension || ""
+          })),
+          child_profile: {
+            name: appState.profile.name,
+            grade: appState.profile.grade,
+            user_query: appState.profile.user_query,
+            reading_history: appState.profile.reading_history
+          }
+        };
+
+        const response = ENABLE_LLM_READING_EVALUATION
+          ? await postReadingEvaluationApi(evaluationRequest, "正在请 AI 老师认真看看你的回答...")
+          : await postToApi({
+            ...evaluationRequest,
+            questions_and_answers: JSON.stringify(evaluationRequest.questions_and_answers)
+          }, "正在认真看看你的回答...");
         const evaluation = normalizeEvaluation(parseReadingCheckResponse(response));
 
         appState.stage = "complete";
@@ -1586,6 +1606,47 @@
         console.warn("Workflow is unavailable. Using the local library.", error);
         await ensureLibraryReady();
         return buildLocalWorkflowResponse(body);
+      } finally {
+        window.clearTimeout(timer);
+        hideLoading();
+      }
+    }
+
+    async function postReadingEvaluationApi(payload, loadingText) {
+      const controller = new AbortController();
+      const timer = window.setTimeout(() => controller.abort(), EVALUATION_TIMEOUT);
+      showLoading(loadingText);
+
+      try {
+        const response = await fetch(READING_EVALUATION_API_URL, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(payload),
+          signal: controller.signal
+        });
+        const text = await response.text();
+
+        if (!response.ok) {
+          throw new Error(getResponseErrorMessage(response.status));
+        }
+        if (!text.trim()) {
+          return {};
+        }
+
+        try {
+          return JSON.parse(text);
+        } catch (error) {
+          return text;
+        }
+      } catch (error) {
+        console.warn("LLM reading evaluation is unavailable. Using the local evaluator.", error);
+        showToast("AI 阅读评价暂时连不上，先用本地规则给出临时反馈。");
+        return buildLocalWorkflowResponse({
+          ...payload,
+          questions_and_answers: JSON.stringify(payload.questions_and_answers || [])
+        });
       } finally {
         window.clearTimeout(timer);
         hideLoading();
@@ -1882,16 +1943,44 @@
       const answers = parseQuestionsAndAnswers(body.questions_and_answers);
       const score = scoreLocalAnswers(answers, book);
       const nextBook = suggestNextLocalBook(book, body.grade);
+      const invalidAnswers = answers.filter((item) => isInvalidReadingAnswer(item.child_answer)).length;
+      const allInvalid = Boolean(answers.length) && invalidAnswers === answers.length;
       const shortAnswers = answers.filter((item) => textOf(item.child_answer).length < 8).length;
-      const level = score >= 90 ? "读得非常好" : score >= 80 ? "读得比较认真" : score >= 70 ? "读懂了主要内容" : "还可以再翻一翻";
+      const level = allInvalid
+        ? "未能证明已认真阅读"
+        : score >= 90
+          ? "读得非常好"
+          : score >= 80
+            ? "读得比较认真"
+            : score >= 70
+              ? "读懂了主要内容"
+              : "还可以再翻一翻";
 
       return {
         level,
         score,
-        summary: shortAnswers ? "你已经完成了阅读检测，能看出读过这本书。个别回答还可以再多写一点具体情节。" : "你能结合问题写出自己的回答，说明不是只看了封面，而是在认真回想书里的内容。",
+        summary: allInvalid
+          ? "这次回答里还没有看到和书中人物、情节或知识点有关的信息，暂时不能判断已经认真读过。"
+          : shortAnswers
+            ? "你已经完成了阅读检测，但个别回答还需要更多具体情节，才能更好证明读懂了。"
+            : "你能结合问题写出自己的回答，说明正在认真回想书里的内容。",
         detail_feedback: buildLocalDetailFeedback(answers, book),
-        encouragement: score >= 85 ? "很棒！继续保持这种边读边想的习惯，下一本可以稍微挑战一点。" : "已经迈出很重要的一步啦。再翻一翻书里最喜欢的部分，把细节补充出来，会读得更扎实。",
-        next_book_suggestion: nextBook ? `下一本可以试试《${nextBook.title}》：${nextBook.reason_for_child}` : "下一本可以从书单里选一本同类型、但稍微长一点的书。"
+        encouragement: allInvalid
+          ? "没关系，可以再翻到最喜欢的一页，试着说出“谁做了什么，为什么让我记住”。"
+          : score >= 85
+            ? "很棒！继续保持这种边读边想的习惯，下一本可以稍微挑战一点。"
+            : "已经迈出很重要的一步啦。再翻一翻书里最喜欢的部分，把细节补充出来，会读得更扎实。",
+        next_book_suggestion: allInvalid
+          ? "建议先复读当前这本书的一个片段，再重新回答小问题。"
+          : nextBook
+            ? `下一本可以试试《${nextBook.title}》：${nextBook.reason_for_child}`
+            : "下一本可以从书单里选一本同类型、但稍微长一点的书。",
+        reading_portrait: {
+          understanding: allInvalid ? "暂未体现有效阅读理解。" : "能从回答中看到一定阅读线索。",
+          expression: invalidAnswers ? "部分回答信息量不足或疑似无效，需要补充具体内容。" : "能用自己的话表达阅读内容。",
+          parent_suggestion: allInvalid ? "家长可以先让孩子口头复述一个具体片段，再回到页面重新填写。" : "家长可以追问“你怎么知道的”，帮助孩子回到书里找证据。"
+        },
+        is_valid_reading_evidence: !allInvalid
       };
     }
 
@@ -1906,12 +1995,15 @@
 
     function scoreLocalAnswers(answers, book) {
       if (!answers.length) {
-        return 60;
+        return 40;
       }
 
       const bookWords = book ? [book.title, book.author, ...arrayOf(book.tags)].filter(Boolean) : [];
       const total = answers.reduce((sum, item) => {
         const answer = textOf(item.child_answer);
+        if (isInvalidReadingAnswer(answer)) {
+          return sum;
+        }
         let points = 0;
         if (answer.length >= 4) points += 4;
         if (answer.length >= 12) points += 3;
@@ -1922,7 +2014,28 @@
       }, 0);
 
       const average = total / answers.length;
-      return clamp(Math.round(58 + average * 3.6), 60, 96);
+      return clamp(Math.round(35 + average * 5), 25, 96);
+    }
+
+    function isInvalidReadingAnswer(value) {
+      const answer = textOf(value).trim();
+      const compact = answer.replace(/\s/g, "");
+      if (!compact) {
+        return true;
+      }
+      if (/^[\d０-９一二三四五六七八九零〇]+$/.test(compact)) {
+        return true;
+      }
+      if (/^[a-zA-Z]+$/.test(compact) && compact.length <= 5) {
+        return true;
+      }
+      if (/^(不知道|不懂|不会|没看|没读|忘了|没有|随便|无|不知道。?)$/i.test(compact)) {
+        return true;
+      }
+      if (/^(.)\1{2,}$/.test(compact)) {
+        return true;
+      }
+      return compact.length < 2;
     }
 
     function suggestNextLocalBook(currentBook, grade) {
@@ -2256,13 +2369,20 @@
     }
 
     function normalizeEvaluation(raw) {
+      const portrait = raw.reading_portrait && typeof raw.reading_portrait === "object" ? raw.reading_portrait : {};
       const evaluation = {
         level: textOf(raw.level),
         score: Number.isFinite(Number(raw.score)) ? Number(raw.score) : null,
         summary: textOf(raw.summary),
         detail_feedback: textOf(raw.detail_feedback),
         encouragement: textOf(raw.encouragement),
-        next_book_suggestion: textOf(raw.next_book_suggestion)
+        next_book_suggestion: textOf(raw.next_book_suggestion),
+        reading_portrait: {
+          understanding: textOf(portrait.understanding),
+          expression: textOf(portrait.expression),
+          parent_suggestion: textOf(portrait.parent_suggestion)
+        },
+        is_valid_reading_evidence: typeof raw.is_valid_reading_evidence === "boolean" ? raw.is_valid_reading_evidence : null
       };
 
       if (!evaluation.level && evaluation.score === null && !evaluation.summary && !evaluation.detail_feedback) {
@@ -2494,6 +2614,16 @@
     }
 
     function renderReadingPortrait() {
+      const modelPortrait = appState.evaluation && appState.evaluation.reading_portrait ? appState.evaluation.reading_portrait : null;
+      if (modelPortrait && (modelPortrait.understanding || modelPortrait.expression || modelPortrait.parent_suggestion)) {
+        renderInfoGrid("#portraitGrid", [
+          ["理解情况", modelPortrait.understanding],
+          ["表达情况", modelPortrait.expression],
+          ["适合的陪伴方式", modelPortrait.parent_suggestion]
+        ], "portrait-item");
+        return;
+      }
+
       const answers = appState.answers || [];
       const answered = answers.filter((answer) => textOf(answer)).length;
       const avgLength = answered ? Math.round(answers.reduce((sum, answer) => sum + textOf(answer).length, 0) / answered) : 0;

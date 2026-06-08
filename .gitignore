@@ -5,4 +5,5 @@ config.local.json
 node_modules/
 cloudbase_upload/
 cloudbase_upload.zip
+evaluateReading_cloudfunction.zip
 小学图书推荐知识库_*.json

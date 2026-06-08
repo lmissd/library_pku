@@ -117,3 +117,15 @@ https://lmissd.github.io/library_pku/
 - 第一阶段只改“孩子点击我回答完了后的读后评价”这一步：找书推荐和问题生成暂时继续使用本地 1000 本 `library.json` 与现有规则逻辑。
 - 大模型评估必须严格识别无效回答：纯数字、乱码、重复字符、“不知道”、答非所问、没有人物/情节/知识点/真实感受，都应判为低分或“未能证明已认真阅读”。
 - 这是面向客户说明 AI 价值的核心升级点：从“阅读面板展示/规则统计”升级为“对孩子自然语言回答进行语义判断，判断是否真的读进去”。
+
+## 2026-06-08 DeepSeek 接入实现版本
+
+- 已新增 CloudBase 云函数源码目录：`cloudfunctions/evaluateReading/`，包含 `index.js` 和 `package.json`。
+- 云函数 `evaluateReading` 用于接收孩子读后回答，调用 DeepSeek 或 OpenAI 兼容第三方中转站 API，并返回结构化 `reading_check_result`。
+- 云函数环境变量约定：`LLM_API_KEY`、`LLM_BASE_URL`、`LLM_MODEL`；默认 `LLM_BASE_URL=https://api.deepseek.com/chat/completions`，默认模型 `deepseek-v4-flash`。
+- 如果第三方中转站不支持 DeepSeek JSON Output 的 `response_format: {"type":"json_object"}`，可配置 `LLM_DISABLE_JSON_MODE=true`。
+- `index.html` 已将“孩子点击我回答完了”后的评价步骤改为优先调用 `/api/evaluate-reading`；本地 file/localhost 环境仍使用本地规则，线上 CloudBase 需要把 HTTP API 路径 `/api/evaluate-reading` 映射到云函数 `evaluateReading`。
+- 家长端阅读画像已改为优先展示大模型返回的 `reading_portrait`，不再只依赖回答数量、平均字数和分数。
+- 本地规则评分已同步加严作为兜底：纯数字、短英文、重复字符、“不知道/没读/不会”等无效回答会低分，不再保底 60 分。
+- 已新增部署说明：`DEEPSEEK_CLOUDBASE_SETUP.md`。
+- 已重新生成 H5 静态托管包：`cloudbase_upload.zip`；已生成云函数上传包：`evaluateReading_cloudfunction.zip`（仅本地上传产物，不进 Git）。

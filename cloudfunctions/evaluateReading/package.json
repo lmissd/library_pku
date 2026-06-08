@@ -1,0 +1,9 @@
+{
+  "name": "evaluate-reading",
+  "version": "1.0.0",
+  "main": "index.js",
+  "private": true,
+  "engines": {
+    "node": ">=18"
+  }
+}
